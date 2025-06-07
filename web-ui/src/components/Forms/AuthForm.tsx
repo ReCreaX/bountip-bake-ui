@@ -1,5 +1,12 @@
 "use client";
-import { BriefcaseBusiness, LockKeyhole, Mail, User } from "lucide-react";
+import {
+  BriefcaseBusiness,
+  Eye,
+  EyeOff,
+  LockKeyhole,
+  Mail,
+  User,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -8,9 +15,12 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import AssetsFiles from "@/assets";
-import { useModalStore } from "@/stores/useUIStore";
 import { useAuthStore } from "@/stores/useAuthStore";
 import PinInput from "../Inputs/PinInput";
+import AuthService from "@/services/authServices";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { setCookie } from "@/utils/cookiesUtils";
 
 type Props = {
   mode: "signin" | "signup";
@@ -20,12 +30,24 @@ const signupSchema = z.object({
   businessName: z.string().min(1, "Business name is required"),
   fullName: z.string().min(1, "Full name is required"),
   email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z
+    .string()
+    .min(6, "Password must be at least 6 characters")
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{6,}$/,
+      "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
+    ),
 });
 
 const signinSchema = z.object({
   businessName: z.string().min(1, "Business name is required"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z
+    .string()
+    .min(6, "Password must be at least 6 characters")
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{6,}$/,
+      "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
+    ),
 });
 
 type SignupFormValues = z.infer<typeof signupSchema>;
@@ -33,13 +55,17 @@ type SigninFormValues = z.infer<typeof signinSchema>;
 type FormValues = SignupFormValues | SigninFormValues;
 
 const AuthForm = ({ mode }: Props) => {
-  const [password, setPassword] = useState("");
-  const { setShowSignUpSuccessModal } = useModalStore();
-  const { pinLogin, setPinLogin } = useAuthStore();
+  const [password, setPassword] = useState<string>("");
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { pinLogin, setPinLogin, pin } = useAuthStore();
+  const authService = new AuthService();
+  const router = useRouter();
 
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(mode === "signup" ? signupSchema : signinSchema),
@@ -48,14 +74,84 @@ const AuthForm = ({ mode }: Props) => {
   const strength = getStrength(password);
   const { label } = getStrengthLabel(strength);
 
-  const onSubmit = (data: FormValues) => {
-    console.log("Form submitted:", data);
-    setShowSignUpSuccessModal(true);
+  const handleSignup = async (data: SignupFormValues) => {
+    const response = await authService.signup(data);
+    console.log(response);
+    if (response.error) {
+      toast.error("Wrong credentials", {
+        duration: 4000,
+        position: "bottom-right",
+      });
+    }
+    if (response.status) {
+      toast.success("User regisered successfully", {
+        duration: 4000,
+        position: "bottom-right",
+      });
+      setCookie(
+        "regUserEmail",
+        { email: data.email, name: data.fullName },
+        { expiresInMinutes: 30 }
+      );
+
+      router.push(`/verify`);
+    }
+    return response;
   };
 
+  const handleSignin = async (data: SigninFormValues) => {
+    const response = await authService.signin(data);
+    console.log("Signin successful:", response);
+
+    // Handle successful login (store tokens, redirect, etc.)
+    // setUser(response.user);
+    // setToken(response.token);
+    // router.push('/dashboard');
+
+    return response;
+  };
+
+  const handlePinLogin = async (pin: string, businessName: string) => {
+    const response = await authService.pinLogin({ businessName, pin });
+    console.log("PIN login successful:", response);
+
+    // Handle successful pin login
+    // setUser(response.user);
+    // setToken(response.token);
+
+    return response;
+  };
   useEffect(() => {
-    setPassword("");
-  }, [pinLogin, mode]);
+    console.log("❗ Form errors:", errors);
+  }, [errors]);
+
+  const onSubmit = async (data: FormValues) => {
+    console.log("🚀 Form submitted!", data); // Add this line
+    setIsLoading(true);
+
+    try {
+      if (mode === "signup") {
+        await handleSignup(data as SignupFormValues);
+        return;
+      }
+
+      if (pinLogin) {
+        console.log("PIN login should be handled by PinInput component");
+        handlePinLogin(pin, data.businessName);
+        return;
+      }
+
+      await handleSignin(data as SigninFormValues);
+
+      reset();
+    } catch (err) {
+      //const errorMessage = err instanceof Error ? err.message : "Authentication failed";
+      console.error("Authentication error:", err);
+      // setError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const hasSignupErrors = (
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -78,7 +174,11 @@ const AuthForm = ({ mode }: Props) => {
         {!pinLogin && (
           <>
             {/* Business Name */}
-            <div className="flex items-center border border-[#E6E6E6] rounded-xl p-4 w-full">
+            <div
+              className={`flex items-center border  rounded-xl p-4 w-full ${
+                errors.businessName ? "border-red-400" : "border-[#E6E6E6]"
+              }`}
+            >
               <BriefcaseBusiness className="text-[#1E1E1E]" />
               <span className="h-[30px] w-0.5 bg-[#E6E6E6] mx-1.5"></span>
               <div className="flex flex-col w-full">
@@ -91,11 +191,6 @@ const AuthForm = ({ mode }: Props) => {
                   className="text-[#1E1E1E] text-base font-medium focus:outline-none"
                   {...register("businessName")}
                 />
-                {errors.businessName && (
-                  <span className="text-sm text-red-500 mt-1">
-                    {errors.businessName.message}
-                  </span>
-                )}
               </div>
             </div>
 
@@ -103,7 +198,13 @@ const AuthForm = ({ mode }: Props) => {
             {mode === "signup" && (
               <>
                 {/* Full Name */}
-                <div className="flex items-center border border-[#E6E6E6] rounded-xl p-4 w-full">
+                <div
+                  className={` flex items-center border ${
+                    hasSignupErrors(errors) && errors.fullName
+                      ? "border-red-400 "
+                      : " border-[#E6E6E6]"
+                  }  rounded-xl p-4 w-full`}
+                >
                   <User className="text-[#1E1E1E]" />
                   <span className="h-[30px] w-0.5 bg-[#E6E6E6] mx-1.5"></span>
                   <div className="flex flex-col w-full">
@@ -116,16 +217,17 @@ const AuthForm = ({ mode }: Props) => {
                       className="text-[#1E1E1E] text-base font-medium focus:outline-none"
                       {...register("fullName" as keyof FormValues)}
                     />
-                    {hasSignupErrors(errors) && errors.fullName && (
-                      <span className="text-sm text-red-500 mt-1">
-                        {errors.fullName.message}
-                      </span>
-                    )}
                   </div>
                 </div>
 
                 {/* Email */}
-                <div className="flex items-center border border-[#E6E6E6] rounded-xl p-4 w-full">
+                <div
+                  className={`flex items-center border ${
+                    hasSignupErrors(errors) && errors.email
+                      ? "border-red-400"
+                      : "border-[#E6E6E6]"
+                  }  rounded-xl p-4 w-full`}
+                >
                   <Mail className="text-[#1E1E1E]" />
                   <span className="h-[30px] w-0.5 bg-[#E6E6E6] mx-1.5"></span>
                   <div className="flex flex-col w-full">
@@ -138,34 +240,42 @@ const AuthForm = ({ mode }: Props) => {
                       className="text-[#1E1E1E] text-base font-medium focus:outline-none"
                       {...register("email" as keyof FormValues)}
                     />
-                    {hasSignupErrors(errors) && errors.email && (
-                      <span className="text-sm text-red-500 mt-1">
-                        {errors.email.message}
-                      </span>
-                    )}
                   </div>
                 </div>
               </>
             )}
 
             {/* Password Field */}
-            <div className="flex items-center border border-[#E6E6E6] rounded-xl p-4 w-full">
+            <div
+              className={`flex items-center border ${
+                hasSignupErrors(errors) && errors.password
+                  ? "border-red-400"
+                  : "border-[#E6E6E6]"
+              } rounded-xl p-4 w-full relative`}
+            >
               <Image src={AssetsFiles.PasswordIcon} alt="Password Icon" />
               <span className="h-[30px] w-0.5 bg-[#E6E6E6] mx-1.5"></span>
               <div className="flex flex-col w-full relative">
                 <label className="text-sm text-[#898989] mb-1">Password</label>
                 <input
-                  type="password"
-                  placeholder="Enter Password"
-                  className="text-[#1E1E1E] text-base font-medium focus:outline-none"
+                  type={showPassword ? "text" : "password"}
+                  placeholder={
+                    showPassword ? "Enter Password" : "***************"
+                  }
+                  className="text-[#1E1E1E] text-base font-medium focus:outline-none pr-8"
                   {...register("password")}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                  }}
                 />
-                {errors.password && (
-                  <span className="text-sm text-red-500 mt-1">
-                    {errors.password.message}
-                  </span>
-                )}
+
+                <button
+                  type="button"
+                  className="absolute right-2 top-4 text-[#1E1E1E] cursor-pointer"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
             </div>
 
@@ -266,12 +376,16 @@ const AuthForm = ({ mode }: Props) => {
 
 export default AuthForm;
 
-// Utility functions with proper TypeScript types
 export const getStrength = (password: string): number => {
   let strength = 0;
   if (password.length >= 1) strength++;
+
   if (/[A-Z]/.test(password)) strength++;
+
+  if (/[a-z]/.test(password)) strength++;
+
   if (/[0-9]/.test(password)) strength++;
+
   if (/[^A-Za-z0-9]/.test(password)) strength++;
   return strength;
 };
@@ -282,14 +396,17 @@ interface StrengthLabel {
 }
 
 export const getStrengthLabel = (strength: number): StrengthLabel => {
+  console.log(strength, "This is the strength");
   switch (strength) {
     case 0:
     case 1:
-      return { label: "Weak Password!", color: "bg-red-500" };
     case 2:
+      return { label: "Weak Password!", color: "bg-red-500" };
+
     case 3:
       return { label: "Average Password", color: "bg-yellow-400" };
     case 4:
+    case 5:
       return { label: "Strong Password", color: "bg-green-500" };
     default:
       return { label: "", color: "" };
@@ -300,7 +417,9 @@ interface PasswordStrengthMeterProps {
   password: string;
 }
 
-export const PasswordStrengthMeter = ({ password }: PasswordStrengthMeterProps) => {
+export const PasswordStrengthMeter = ({
+  password,
+}: PasswordStrengthMeterProps) => {
   const strength = getStrength(password);
   const { color } = getStrengthLabel(strength);
 

@@ -2,7 +2,11 @@
 import { useState } from "react";
 import { useAuthStore } from "@/stores/useAuthStore";
 
-const PinInput = () => {
+type PinInputProps = {
+  onSubmitPin?: () => void;
+};
+
+const PinInput = ({ onSubmitPin }: PinInputProps) => {
   const [localPin, setLocalPin] = useState<string[]>([]);
   const setPin = useAuthStore((s) => s.setPin);
 
@@ -11,6 +15,10 @@ const PinInput = () => {
       const updated = [...localPin, value];
       setLocalPin(updated);
       setPin(updated.join(""));
+
+      if (updated.length === 4 && onSubmitPin) {
+        onSubmitPin();
+      }
     }
   };
 
@@ -21,7 +29,7 @@ const PinInput = () => {
   };
 
   return (
-    <div className=" mt-10">
+    <div className="mt-10">
       <div className="flex justify-center space-x-2 mb-6">
         {[0, 1, 2, 3].map((_, i) => (
           <div
@@ -33,15 +41,19 @@ const PinInput = () => {
         ))}
       </div>
       <div className="grid grid-cols-3 gap-4">
-        {["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "del"].map((btn, idx) => (
-          <button
-            key={idx}
-            className="bg-gray-100 hover:bg-gray-200 text-lg p-4 rounded-lg shadow"
-            onClick={() => (btn === "del" ? handleDelete() : handleClick(btn))}
-          >
-            {btn === "del" ? "⌫" : btn}
-          </button>
-        ))}
+        {["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "del"].map(
+          (btn, idx) => (
+            <button
+              key={idx}
+              className="bg-gray-100 hover:bg-gray-200 text-lg p-4 rounded-lg shadow"
+              onClick={() =>
+                btn === "del" ? handleDelete() : handleClick(btn)
+              }
+            >
+              {btn === "del" ? "⌫" : btn}
+            </button>
+          )
+        )}
       </div>
     </div>
   );

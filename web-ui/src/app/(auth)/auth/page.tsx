@@ -82,7 +82,7 @@ const SignInPage = () => {
           <AuthForm mode={active} />
         </section>
       </section>
-      {showsignUpSuccessModal && <SuccessModal />}
+     
     </section>
   );
 };

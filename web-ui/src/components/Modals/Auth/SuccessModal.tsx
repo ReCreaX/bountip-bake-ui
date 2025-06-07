@@ -1,8 +1,11 @@
 "use client";
-import { useModalStore } from "@/stores/useUIStore";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useModalStore } from "@/stores/useUIStore";
+import { removeCookie } from "@/utils/cookiesUtils";
 
 export default function SuccessModal() {
+  const router = useRouter();
   const [animate, setAnimate] = useState(false);
   const { setShowSignUpSuccessModal, showsignUpSuccessModal } = useModalStore();
 
@@ -20,6 +23,13 @@ export default function SuccessModal() {
   }, [showsignUpSuccessModal]);
 
   if (!showsignUpSuccessModal) return null;
+
+  const handleEmailVerified = () => {
+    console.log("Testing this");
+    setShowSignUpSuccessModal(false);
+    router.push(`/auth?signin`);
+    removeCookie("regUserEmail");
+  };
 
   return (
     <div className="fixed inset-0  bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-50">
@@ -52,7 +62,7 @@ export default function SuccessModal() {
           Your account has been created successfully!
         </p>
         <button
-          onClick={() => setShowSignUpSuccessModal(false)}
+          onClick={handleEmailVerified}
           className="bg-[#15BA5C] hover:bg-green-600 text-white font-semibold py-2 px-6 rounded-lg transition duration-300 w-full"
         >
           Proceed
