@@ -10,7 +10,7 @@ const DashboardLayout = ({ children }:DashboardLayoutProps) => {
       <Header />
       <main className="flex">
         <DashboardSidebarLayout />
-        <section className="bg-red-600 w-full">{children}</section>
+        <section className=" w-full">{children}</section>
       </main>
     </div>
   );

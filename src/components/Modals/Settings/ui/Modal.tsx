@@ -7,8 +7,9 @@ interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
-  subtitle:string;
+  subtitle: string;
   children: React.ReactNode;
+  size?: "sm" | "md" | "lg" | "xl" | "full" | number; // Added size prop
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -18,15 +19,16 @@ export const Modal: React.FC<ModalProps> = ({
   title,
   subtitle,
   children,
+  size = "sm", // Default size
 }) => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       setIsVisible(true);
-      document.body.style.overflow = "hidden"; 
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = ""; 
+      document.body.style.overflow = "";
       const timeout = setTimeout(() => setIsVisible(false), 300);
       return () => clearTimeout(timeout);
     }
@@ -36,13 +38,35 @@ export const Modal: React.FC<ModalProps> = ({
     };
   }, [isOpen]);
 
+  // Function to get width based on size prop
+  const getWidthClass = () => {
+    if (typeof size === "number") {
+      return `w-[${size}%]`;
+    }
+    
+    switch (size) {
+      case "sm":
+        return "w-[50%]";
+      case "md":
+        return "w-[70%]";
+      case "lg":
+        return "w-[80%]";
+      case "xl":
+        return "w-[90%]";
+      case "full":
+        return "w-full";
+      default:
+        return "w-[70%]";
+    }
+  };
+
   if (!isOpen && !isVisible) return null;
   if (!image) return null;
 
   return (
     <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex justify-end z-50 transition-opacity duration-300 ease-in-out">
       <div
-        className={`bg-white shadow-xl rounded-l-lg w-full max-w-2xl h-full overflow-hidden transform transition-all duration-300 ease-in-out
+        className={`bg-white shadow-xl rounded-l-lg ${getWidthClass()} h-full overflow-hidden transform transition-all duration-300 ease-in-out
           ${isOpen ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"}
         `}
       >
@@ -62,7 +86,7 @@ export const Modal: React.FC<ModalProps> = ({
             </div>
           </div>
           <button
-            onClick={onClose} 
+            onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-full transition"
             aria-label="Close"
           >

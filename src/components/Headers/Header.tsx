@@ -1,14 +1,27 @@
+"use client";
 import AssetsFiles from "@/assets";
+import { useModalStore } from "@/stores/useUIStore";
+import { UserType } from "@/types/userTypes";
+import { getCookie } from "@/utils/cookiesUtils";
 import { Bell, ChevronDown, ChevronsLeftRight, Search } from "lucide-react";
 import Image from "next/image";
 
 const Header = () => {
+  const { setShowFullDashboardSidebar, showFullDashboardSidebar } =
+    useModalStore();
+
+  const user = getCookie<UserType>("bountipLoginUser");
   return (
     <header className="flex items-center justify-between p-4 bg-white shadow-md">
       <section className="flex items-center gap-4">
         <Image src={AssetsFiles.LogoTwo} alt="Logo" className="w-[100px]" />
         <button className="bg-[#FBFBFB] border-[#C1C1C1] border" type="button">
-          <ChevronsLeftRight className="text-[#1C1B20] font-light" />
+          <ChevronsLeftRight
+            onClick={() => {
+              setShowFullDashboardSidebar(!showFullDashboardSidebar);
+            }}
+            className="text-[#1C1B20] font-light"
+          />
         </button>
       </section>
       <section className="relative border border-[#E7E7E7] rounded-2xl py-3 pl-11 pr-6 w-1/3">
@@ -35,7 +48,7 @@ const Header = () => {
             alt="User"
           />
           <div className="flex gap-2.5">
-            <h3 className="">Jacob Jones</h3>
+            <h3 className="text-nowrap">{user?.fullName}</h3>
             <ChevronDown />
           </div>
         </div>

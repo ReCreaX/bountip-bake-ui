@@ -21,6 +21,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { getCookie, setCookie } from "@/utils/cookiesUtils";
 import authService from "@/services/authServices";
+import { UserType } from "@/types/userTypes";
 
 type Props = {
   mode: "signin" | "signup";
@@ -53,6 +54,30 @@ const signinSchema = z.object({
 type SignupFormValues = z.infer<typeof signupSchema>;
 type SigninFormValues = z.infer<typeof signinSchema>;
 type FormValues = SignupFormValues | SigninFormValues;
+// src/types/auth.ts
+
+type AuthTokens = {
+  accessToken: string;
+  refreshToken: string;
+};
+
+type AuthBase = {
+  message?: string;
+};
+
+export type AuthResponse =
+  | ({
+      status: true;
+      error?: false;
+      data: {
+        user: UserType;
+        tokens: AuthTokens;
+      };
+    } & AuthBase)
+  | ({
+      status: false;
+      error: boolean;
+    } & AuthBase);
 
 const AuthForm = ({ mode }: Props) => {
   const [password, setPassword] = useState<string>("");
@@ -75,8 +100,7 @@ const AuthForm = ({ mode }: Props) => {
   const { label } = getStrengthLabel(strength);
 
   const handleSignup = async (data: SignupFormValues) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const response: any = await authService.signup(data);
+    const response = (await authService.signup(data)) as AuthResponse;
 
     if (response.error) {
       toast.error(response.message || "Wrong credentials", {
@@ -100,11 +124,10 @@ const AuthForm = ({ mode }: Props) => {
     }
   };
   const handleSignin = async (data: SigninFormValues) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const response: any = await authService.signin({
+    const response = (await authService.signin({
       email: data.email,
       password: data.password,
-    });
+    })) as AuthResponse;
 
     if (response.error) {
       toast.error(response.message || "Sign in failed", {
@@ -115,15 +138,16 @@ const AuthForm = ({ mode }: Props) => {
     }
 
     if (response.status) {
-      const userData = {
+      const userData: UserType = {
         id: response.data.user.id,
         fullName: response.data.user.fullName,
         email: response.data.user.email,
         status: response.data.user.status,
         lastLoginAt: response.data.user.lastLoginAt,
         createdAt: response.data.user.createdAt,
+        userType: response.data.user.userType,
       };
-
+      console.log("User data:", response);
       // Store user data
       setCookie("bountipLoginUser", userData, { expiresInMinutes: 60 * 120 });
       const userTokens = getCookie("bountipRegisteredUsers");
@@ -150,7 +174,7 @@ const AuthForm = ({ mode }: Props) => {
   };
 
   const handlePinLogin = async (pin: string) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const response: any = await authService.pinLogin({ pin });
 
     if (response.error) {
@@ -484,4 +508,3 @@ export const PasswordStrengthMeter = ({
     </div>
   );
 };
-
