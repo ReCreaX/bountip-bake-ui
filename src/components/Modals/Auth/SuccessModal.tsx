@@ -27,7 +27,7 @@ export default function SuccessModal() {
   const handleEmailVerified = () => {
     console.log("Testing this");
     setShowSignUpSuccessModal(false);
-    router.push(`/auth?signin`);
+    router.push(`/onboarding`);
     removeCookie("regUserEmail");
   };
 

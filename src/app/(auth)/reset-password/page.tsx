@@ -5,7 +5,6 @@ import {
   getStrengthLabel,
   PasswordStrengthMeter,
 } from "@/components/Forms/AuthForm";
-import AuthService from "@/services/authServices";
 import {
   BadgeCheck,
   Eye,
@@ -19,8 +18,8 @@ import Link from "next/link";
 import React, { useState, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { getCookie, removeCookie, setCookie } from "@/utils/cookiesUtils";
-
-const authService = new AuthService();
+import { toast } from "sonner";
+import authService from "@/services/authServices";
 
 const ResetPasswordPage = () => {
   const searchParams = useSearchParams();
@@ -68,18 +67,42 @@ function ForgotPassword({ onNext }: { onNext: () => void }) {
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
     e.preventDefault();
-    try {
-      if (!email) return;
 
-      const response = await authService.forgotPassword({ email });
+    if (!email) {
+      toast.error("Please enter your email address", {
+        duration: 4000,
+        position: "bottom-right",
+      });
+      return;
+    }
+
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const response: any = await authService.forgotPassword({ email });
       console.log(response);
+
+      if (response.error) {
+        toast.error(response.message || "Failed to send reset code", {
+          duration: 4000,
+          position: "bottom-right",
+        });
+        return;
+      }
+
       if (response.status) {
+        toast.success("Reset code sent to your email", {
+          duration: 4000,
+          position: "bottom-right",
+        });
         setCookie("resetUserEmail", { email: email }, { expiresInMinutes: 30 });
         onNext();
       }
     } catch (error) {
       console.error("Error sending forgot password:", error);
-      // Show error message here as needed
+      toast.error("An error occurred. Please try again.", {
+        duration: 4000,
+        position: "bottom-right",
+      });
     }
   };
 
@@ -136,9 +159,9 @@ function OtpInput({ onNext }: { onNext: () => void }) {
     }
   };
   const user = getCookie<{ email: string }>("resetUserEmail");
-  if(!user){
+  if (!user) {
     router.push("/reset-password?step=otp");
-  } 
+  }
   console.log("This is user---", user);
 
   const handleKeyDown = (
@@ -161,8 +184,10 @@ function OtpInput({ onNext }: { onNext: () => void }) {
   const handleResendOtpToEmail = async () => {
     try {
       if (!user?.email) return;
-
-      const response = await authService.forgotPassword({ email: user.email });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const response: any = await authService.forgotPassword({
+        email: user.email,
+      });
       console.log(response);
       if (response.status) {
         setCookie(
@@ -244,8 +269,7 @@ function CreateNewPassword({ onNext }: { onNext: () => void }) {
 
   const user = getCookie<{ email: string }>("resetUserEmail");
   const userToken = getCookie<{ token: string }>("tokenUserEmail");
-  if(!user){
-
+  if (!user) {
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -261,7 +285,8 @@ function CreateNewPassword({ onNext }: { onNext: () => void }) {
       return;
     }
 
-    const response = await authService.resetPassword({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response: any = await authService.resetPassword({
       email: user?.email as string,
       password: newPassword,
       token: userToken?.token as string,

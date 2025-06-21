@@ -17,10 +17,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import AssetsFiles from "@/assets";
 import { useAuthStore } from "@/stores/useAuthStore";
 import PinInput from "../Inputs/PinInput";
-import AuthService from "@/services/authServices";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { setCookie } from "@/utils/cookiesUtils";
+import { getCookie, setCookie } from "@/utils/cookiesUtils";
+import authService from "@/services/authServices";
 
 type Props = {
   mode: "signin" | "signup";
@@ -57,9 +57,9 @@ type FormValues = SignupFormValues | SigninFormValues;
 const AuthForm = ({ mode }: Props) => {
   const [password, setPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { pinLogin, setPinLogin, pin } = useAuthStore();
-  const authService = new AuthService();
   const router = useRouter();
 
   const {
@@ -75,13 +75,17 @@ const AuthForm = ({ mode }: Props) => {
   const { label } = getStrengthLabel(strength);
 
   const handleSignup = async (data: SignupFormValues) => {
-    const response = await authService.signup(data);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response: any = await authService.signup(data);
+
     if (response.error) {
-      toast.error("Wrong credentials", {
+      toast.error(response.message || "Wrong credentials", {
         duration: 4000,
         position: "bottom-right",
       });
+      return response;
     }
+
     if (response.status) {
       toast.success("User registered successfully", {
         duration: 4000,
@@ -94,21 +98,89 @@ const AuthForm = ({ mode }: Props) => {
       );
       router.push(`/verify`);
     }
-    return response;
   };
-
   const handleSignin = async (data: SigninFormValues) => {
-    const response = await authService.signin({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response: any = await authService.signin({
       email: data.email,
       password: data.password,
     });
 
-    console.log("Signin successful:", response);
-    return response;
+    if (response.error) {
+      toast.error(response.message || "Sign in failed", {
+        duration: 4000,
+        position: "bottom-right",
+      });
+      return response;
+    }
+
+    if (response.status) {
+      const userData = {
+        id: response.data.user.id,
+        fullName: response.data.user.fullName,
+        email: response.data.user.email,
+        status: response.data.user.status,
+        lastLoginAt: response.data.user.lastLoginAt,
+        createdAt: response.data.user.createdAt,
+      };
+
+      // Store user data
+      setCookie("bountipLoginUser", userData, { expiresInMinutes: 60 * 120 });
+      const userTokens = getCookie("bountipRegisteredUsers");
+
+      // Store tokens as object under a login-specific cookie name
+      setCookie(
+        "bountipLoginUserTokens",
+        {
+          accessToken: response.data.tokens.accessToken,
+          refreshToken: response.data.tokens.refreshToken,
+        },
+        { expiresInMinutes: 60 * 120 }
+      );
+      if (userTokens) {
+        router.push("/onboarding");
+      } else {
+        toast.success("Sign in successful", {
+          duration: 4000,
+          position: "bottom-right",
+        });
+        router.push("/dashboard");
+      }
+    }
   };
 
   const handlePinLogin = async (pin: string) => {
-    const response = await authService.pinLogin({ pin });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response: any = await authService.pinLogin({ pin });
+
+    if (response.error) {
+      toast.error(response.message || "PIN login failed", {
+        duration: 4000,
+        position: "bottom-right",
+      });
+      return response;
+    }
+
+    if (response.status) {
+      toast.success("PIN login successful", {
+        duration: 4000,
+        position: "bottom-right",
+      });
+
+      // PIN flow uses bountipRegisteredUsers cookie (from your authService.pinLogin)
+      // The response should contain tokens if successful
+      if (response.data?.tokens) {
+        setCookie(
+          "bountipRegisteredUsers",
+          {
+            accessToken: response.data.tokens.accessToken,
+            refreshToken: response.data.tokens.refreshToken,
+          },
+          { expiresInMinutes: 60 * 120 }
+        );
+      }
+    }
+
     console.log("PIN login successful:", response);
     return response;
   };
@@ -142,6 +214,7 @@ const AuthForm = ({ mode }: Props) => {
   };
 
   const hasSignupErrors = (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     errors: any
   ): errors is Partial<Record<keyof SignupFormValues, { message: string }>> =>
     mode === "signup";
@@ -411,3 +484,4 @@ export const PasswordStrengthMeter = ({
     </div>
   );
 };
+

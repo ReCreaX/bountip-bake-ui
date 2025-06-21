@@ -26,6 +26,7 @@ const OnboardingPage = () => {
   const userTokens = getCookie<{ accessToken: string; refreshToken: string }>(
     "bountipRegisteredUsers"
   );
+
   const isUserRegistered =
     userTokens && userTokens.accessToken && userTokens.refreshToken;
   if (!isUserRegistered) {

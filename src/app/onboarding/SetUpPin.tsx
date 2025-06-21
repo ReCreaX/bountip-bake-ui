@@ -1,6 +1,8 @@
 import { useAuthStore } from "@/stores/useAuthStore";
 import PinInput from "@/components/Inputs/PinInput";
-import { authService } from "@/services/authServices";
+import { setCookie } from "@/utils/cookiesUtils";
+import { toast } from "sonner";
+import authService from "@/services/authServices";
 
 interface SetUpPinProps {
   onNext: () => void;
@@ -9,14 +11,43 @@ const SetUpPin = ({ onNext }: SetUpPinProps) => {
   const pin = useAuthStore((state) => state.pin);
 
   const handlePinSetUp = async () => {
-    if (pin.length === 4) {
-      const response = await authService.pinLogin({ pin });
-      if (response.status) {
-        onNext();
-        return;
+    if (pin.length !== 4) {
+      toast.error("Please enter a valid 4-digit PIN", {
+        duration: 4000,
+        position: "bottom-right",
+      });
+      return;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response:any = await authService.pinLogin({ pin });
+
+    if (response.error) {
+      toast.error(response.message || "PIN setup failed", {
+        duration: 4000,
+        position: "bottom-right",
+      });
+      return;
+    }
+
+    if (response.status) {
+      toast.success("PIN setup successful", {
+        duration: 4000,
+        position: "bottom-right",
+      });
+
+      if (response.data?.tokens) {
+        setCookie(
+          "bountipRegisteredUsers",
+          {
+            accessToken: response.data.tokens.accessToken,
+            refreshToken: response.data.tokens.refreshToken,
+          },
+          { expiresInMinutes: 60 * 120 }
+        );
       }
-    } else {
-      alert("Please enter a valid 4-digit PIN");
+
+      onNext();
     }
   };
 

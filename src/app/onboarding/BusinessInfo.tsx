@@ -1,6 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ChevronDown, Plus, X, Check } from "lucide-react";
 import BusinessRevenueComponent from "./BusinessRevenueComponent";
+import { businessService } from "@/services/businessService";
+import { toast } from "sonner";
+import { getCookie, removeCookie } from "@/utils/cookiesUtils";
+import { useRouter } from "next/navigation";
 
 const countries = [
   { code: "US", name: "United States" },
@@ -16,16 +20,39 @@ const countries = [
 ];
 
 const defaultBusinessTypes = ["Bakery", "Restaurant", "Bar"];
+
+interface BusinessAndOutlet {
+  businessId: number | null;
+  outletId: number | null;
+}
+interface BusinessResponse {
+  error?: string;
+  status: boolean;
+  data?: {
+    business?: { id: number };
+    outlets?: Array<{ outlet: { id: number } }>;
+  };
+}
+
 const BusinessInfo = () => {
+  const router = useRouter();
   const [businessType, setBusinessType] = useState("");
   const [businessLocation, setBusinessLocation] = useState("");
+  const [businessAddress, setBusinessAddress] = useState("")
   const [businessTypes, setBusinessTypes] = useState(defaultBusinessTypes);
   const [isBusinessTypeOpen, setIsBusinessTypeOpen] = useState(false);
   const [isLocationOpen, setIsLocationOpen] = useState(false);
   const [newBusinessType, setNewBusinessType] = useState("");
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [revenue, setRevenue] = useState(50000);
-  const [logoFile, setLogoFile] = useState<File | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_, setLogoFile] = useState<File | null>(null);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState("");
+  const [{ businessId, outletId }, setBusinessOutlet] =
+    useState<BusinessAndOutlet>({
+      businessId: null,
+      outletId: null,
+    });
 
   const handleAddBusinessType = () => {
     if (
@@ -41,7 +68,30 @@ const BusinessInfo = () => {
     }
   };
 
+  useEffect(() => {
+    if (typeof businessId === "number" && typeof outletId === "number") return;
 
+    const fetchBusiness = async () => {
+      try {
+        const res =
+          (await businessService.getUserBusiness()) as BusinessResponse;
+        console.log("This is res ----", res);
+        if ("error" in res || !res.status) {
+          console.warn("Failed to fetch business:", res);
+          return;
+        }
+
+        const businessId = res.data?.business?.id ?? null;
+        const outletId = res.data?.outlets?.[0]?.outlet?.id ?? null;
+        console.log("This is business----", businessId, outletId);
+        setBusinessOutlet({ businessId, outletId });
+      } catch (err) {
+        console.error("Unexpected error while fetching business:", err);
+      }
+    };
+
+    fetchBusiness();
+  }, [businessId, outletId]);
 
   const handleBusinessTypeSelect = (type: string) => {
     setBusinessType(type);
@@ -53,33 +103,55 @@ const BusinessInfo = () => {
     setIsLocationOpen(false);
   };
 
-  const handleBusinessOnboardingSubmission = async()=>{
+  // Handle image upload URL from child component
+  const handleImageUpload = (url: string) => {
+    setUploadedImageUrl(url);
+  };
+
+  const handleBusinessOnboardingSubmission = async (e:React.FormEvent) => {
+    e.preventDefault()
     if (!businessType || !businessLocation) {
       alert("Please select business type and location");
       return;
     }
-    const formData = new FormData();
-    formData.append("businessType", businessType);
-    formData.append("businessLocation", businessLocation);
-    formData.append("revenue", revenue.toString());
-    if (logoFile) {
-      formData.append("logo", logoFile);
-    }
+    console.log()
 
     try {
-      const response = await fetch("/api/onboarding/business", {
-        method: "POST",
-        body: formData,
+      const Tokens = getCookie<{
+        accessToken: string;
+        refreshToken: string;
+      }>("bountipLogInUser");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const response: any = await businessService.onboardBusiness({
+        businessId: businessId as number,
+        outletId: outletId as number,
+        country: businessLocation,
+        logoUrl: uploadedImageUrl,
+        address: businessAddress, // Assuming address is same as location for simplicity
+        businessType: businessType,
+        currency: "USD",
+        revenueRange: revenue.toString(),
       });
-      if (!response.ok) {
-        throw new Error("Failed to submit business onboarding data");
+      if (response.status) {
+        toast.success("Business information submitted successfully!", {
+          duration: 4000,
+          position: "bottom-right",
+        });
+        removeCookie("bountipRegisteredUser");
+        if(Tokens?.accessToken && Tokens?.refreshToken) {
+          router.push("/dashboard")
+        } else{
+          router.push("/auth?signin");
+        }
+        
       }
-      alert("Business onboarding submitted successfully!");
+      console.log("Business onboarding response:", response);
     } catch (error) {
       console.error(error);
       alert("An error occurred while submitting your business information.");
     }
-  }
+  };
+
   return (
     <>
       <h3 className="text-[#1E1E1E] text-[26px] font-bold mt-6 mb-4 text-center">
@@ -239,12 +311,13 @@ const BusinessInfo = () => {
 
           <div className="space-y-2">
             <h3 className="font-medium text-[18px] text-gray-700">
-              What type of Business are you?
+              What is your Business address?
             </h3>
             <input
               type="text"
               name="businessAddress"
               id=""
+              onChange={(e) => setBusinessAddress(e.target.value)}
               placeholder="Enter your Business address"
               autoFocus
               className="w-full text-[#1E1E1E] text-[15px] flex-1 px-3 py-2.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#15BA5C]"
@@ -254,12 +327,13 @@ const BusinessInfo = () => {
             <BusinessRevenueComponent
               onRevenueChange={setRevenue}
               onFileUpload={setLogoFile}
+              onImageUpload={handleImageUpload}
             />
           </div>
 
           {/* Continue Button */}
           <button
-          onClick={handleBusinessOnboardingSubmission}
+            onClick={handleBusinessOnboardingSubmission}
             type="submit"
             disabled={!businessType || !businessLocation}
             className="w-full mt-8 px-6 py-3 bg-[#15BA5C] text-white font-medium rounded-lg hover:bg-[#13A652] focus:outline-none focus:ring-2 focus:ring-[#15BA5C] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"

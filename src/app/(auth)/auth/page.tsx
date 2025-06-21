@@ -3,8 +3,6 @@ import AssetsFiles from "@/assets";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import AuthForm from "@/components/Forms/AuthForm";
-import { useModalStore } from "@/stores/useUIStore";
-import SuccessModal from "@/components/Modals/Auth/SuccessModal";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -13,7 +11,6 @@ const SignInPage = () => {
   const searchParams = useSearchParams();
 
   const [active, setActive] = useState<"signin" | "signup">("signup");
-  const { showsignUpSuccessModal } = useModalStore();
   const { setPinLogin } = useAuthStore();
 
   useEffect(() => {

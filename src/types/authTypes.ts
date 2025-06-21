@@ -35,7 +35,6 @@ export type SignupData = WithBusinessName &
 
 export type VerifyEmailData = WithEmail & WithOtp;
 
-
 export type SigninData = WithEmail & WithPassword;
 
 export type PinLoginData = WithPin;
@@ -43,5 +42,4 @@ export type PinLoginData = WithPin;
 export type ForgotPasswordData = WithEmail;
 
 export type ResetPasswordData = WithEmail & WithToken & WithPassword;
-
 

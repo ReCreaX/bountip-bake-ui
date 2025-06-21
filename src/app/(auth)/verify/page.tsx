@@ -1,8 +1,8 @@
 "use client";
 import AssetsFiles from "@/assets";
-import LoadingScreen from "@/components/Loaders/LoadingScreen";
+// import LoadingScreen from "@/components/Loaders/LoadingScreen";
 import SuccessModal from "@/components/Modals/Auth/SuccessModal";
-import AuthService from "@/services/authServices";
+import authService from "@/services/authServices";
 import { useModalStore } from "@/stores/useUIStore";
 import { getCookie, setCookie } from "@/utils/cookiesUtils";
 import { Mail } from "lucide-react";
@@ -16,7 +16,6 @@ const VerifyPage = () => {
   const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
   const { setShowSignUpSuccessModal, showsignUpSuccessModal } = useModalStore();
   const router = useRouter();
-  const authService = new AuthService();
 
   const user = getCookie<{ email: string; name: string }>("regUserEmail");
 
@@ -71,32 +70,48 @@ const VerifyPage = () => {
   const handleVerifyEmail = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!isOtpComplete) return;
+    if (!isOtpComplete) {
+      toast.error("Please enter the complete OTP", {
+        duration: 4000,
+        position: "bottom-right",
+      });
+      return;
+    }
 
     const otpCode = otp.join("");
     const data = {
       email: user.email,
       otp: otpCode,
     };
-    const response = await authService.verifyEmail(data);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response: any = await authService.verifyEmail(data);
     console.log(response);
+
     if (response.error) {
-      toast.error("Invalid OTP", {
+      toast.error(response.message || "Invalid OTP", {
         duration: 4000,
         position: "bottom-right",
       });
+      return;
     }
+
     if (response.status) {
+      toast.success("Email verified successfully", {
+        duration: 4000,
+        position: "bottom-right",
+      });
+
       setShowSignUpSuccessModal(true);
+
+      // Email verification uses bountipRegisteredUsers cookie
       setCookie(
         "bountipRegisteredUsers",
         {
           accessToken: response.data.tokens.accessToken,
           refreshToken: response.data.tokens.refreshToken,
         },
-        { expiresInMinutes: 10080 }
+        { expiresInMinutes: 10080 } // 7 days
       );
-      router.push("/onboarding");
     }
   };
 
