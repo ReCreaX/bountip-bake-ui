@@ -106,7 +106,7 @@ export const InvoiceCustomizationModal: React.FC<
     setSettings((prev) => ({
       ...prev,
       [section]: {
-        ...prev[section],
+        ...(prev[section] as object),
         [field]: value,
       },
     }));

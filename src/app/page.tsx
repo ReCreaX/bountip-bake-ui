@@ -11,7 +11,7 @@ export default function Home() {
     const token = getCookie<{
       accessToken: string;
       refreshToken: string;
-    }>("bountipLogInUser");
+    }>("bountipLoginUserTokens");
 
     if (token?.accessToken) {
       router.push("/dashboard");

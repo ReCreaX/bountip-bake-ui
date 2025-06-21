@@ -9,6 +9,7 @@ export const AccountSettingsModal: React.FC<{
     onClose: () => void;
   }> = ({ isOpen, onClose }) => {
     const [activeTab, setActiveTab] = useState<'taxes' | 'service'>('taxes');
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [taxes, setTaxes] = useState([
       { name: "VAT", rate: 7.5, includeInMenu: true, applyOnOrder: false, applyToAll: true }
     ]);

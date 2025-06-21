@@ -120,7 +120,7 @@ const BusinessInfo = () => {
       const Tokens = getCookie<{
         accessToken: string;
         refreshToken: string;
-      }>("bountipLogInUser");
+      }>("bountipLoginUserTokens");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const response: any = await businessService.onboardBusiness({
         businessId: businessId as number,
@@ -137,7 +137,8 @@ const BusinessInfo = () => {
           duration: 4000,
           position: "bottom-right",
         });
-        removeCookie("bountipRegisteredUser");
+        removeCookie("bountipRegisteredUsers");
+        console.log(Tokens)
         if(Tokens?.accessToken && Tokens?.refreshToken) {
           router.push("/dashboard")
         } else{
