@@ -1,15 +1,19 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Modal } from "../ui/Modal";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
 import { BusinessDetails } from "@/types/settingTypes";
 import SettingFiles from "@/assets/icons/settings";
+import { businessService } from "@/services/businessService";
+import { BusinessAndOutlet, BusinessResponse } from "@/types/businessTypes";
 
 interface BusinessDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  businessDetails: BusinessDetails;
-  onSave: (details: BusinessDetails) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  businessDetails: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onSave: (details: any) => void;
 }
 
 export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({
@@ -19,6 +23,36 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({
   onSave,
 }) => {
   const [formData, setFormData] = useState<BusinessDetails>(businessDetails);
+  const [{ businessId, outletId }, setBusinessOutlet] =
+    useState<BusinessAndOutlet>({
+      businessId: null,
+      outletId: null,
+    });
+  useEffect(() => {
+    if (typeof businessId === "number" && typeof outletId === "number") return;
+
+    const fetchBusiness = async () => {
+      try {
+        const res = (await businessService.getUserBusiness(
+          "bountipLoginUserTokens"
+        )) as BusinessResponse;
+        console.log("This is res ----", res);
+        if ("error" in res || !res.status) {
+          console.warn("Failed to fetch business:", res);
+          return;
+        }
+
+        const businessId = res.data?.business?.id ?? null;
+        const outletId = res.data?.outlets?.[0]?.outlet?.id ?? null;
+        console.log("This is business----", businessId, outletId);
+        setBusinessOutlet({ businessId, outletId });
+      } catch (err) {
+        console.error("Unexpected error while fetching business:", err);
+      }
+    };
+
+    fetchBusiness();
+  }, [businessId, outletId]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +66,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({
 
   return (
     <Modal
-    subtitle="Update and Manage Business Information"
+      subtitle="Update and Manage Business Information"
       image={SettingFiles.BusinessIcon}
       isOpen={isOpen}
       onClose={onClose}
@@ -148,7 +182,6 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({
           >
             Save Details
           </button>
-          
         </div>
       </form>
     </Modal>

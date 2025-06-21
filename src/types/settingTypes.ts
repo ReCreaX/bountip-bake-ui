@@ -8,7 +8,7 @@ export interface BusinessDetails {
   streetAddress: string;
   businessType: string;
   postalCode: string;
-  logo?: string;
+  logo: string;
 }
 
 export interface PaymentMethod {

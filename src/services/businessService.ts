@@ -21,8 +21,8 @@ class BusinessService {
     );
   }
 
-  async getUserBusiness() {
-    return this.request.get("/business", "bountipRegisteredUsers");
+  async getUserBusiness(cookieName= "bountipRegisteredUsers") {
+    return this.request.get("/business", cookieName);
   }
 }
 

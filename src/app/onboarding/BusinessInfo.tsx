@@ -5,6 +5,7 @@ import { businessService } from "@/services/businessService";
 import { toast } from "sonner";
 import { getCookie, removeCookie } from "@/utils/cookiesUtils";
 import { useRouter } from "next/navigation";
+import { BusinessAndOutlet, BusinessResponse } from "@/types/businessTypes";
 
 const countries = [
   { code: "US", name: "United States" },
@@ -21,18 +22,7 @@ const countries = [
 
 const defaultBusinessTypes = ["Bakery", "Restaurant", "Bar"];
 
-interface BusinessAndOutlet {
-  businessId: number | null;
-  outletId: number | null;
-}
-interface BusinessResponse {
-  error?: string;
-  status: boolean;
-  data?: {
-    business?: { id: number };
-    outlets?: Array<{ outlet: { id: number } }>;
-  };
-}
+
 
 const BusinessInfo = () => {
   const router = useRouter();
