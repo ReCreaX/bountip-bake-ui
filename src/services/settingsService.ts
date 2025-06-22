@@ -1,13 +1,25 @@
 import { BusinessDetailsType } from "@/types/businessTypes";
 import { HttpService } from "./httpService";
+import { COOKIE_NAMES } from "@/utils/cookiesUtils";
 
-class settingsService {
+class SettingsService {
   private request = new HttpService();
-  async updateBusinessDetails(data: BusinessDetailsType) {
-    console.log(data)
-    return this.request.post("/business/onboard", {});
+  async updateBusinessDetails(data: BusinessDetailsType, outletId: number|number) {
+    return this.request.patch(`/outlet/${outletId}`,{
+     
+        name: data.name,
+        address: data.address,
+        phoneNumber: data.phone,
+        city: data.city,
+        state: data.state,
+        country:data.country,
+        postalCode: data.postalCode,
+        businessType: data.businessType,
+        logoUrl: data.logoUrl
+      
+    }, COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS,);
   }
 }
 
-const settingsServiceInstance = new settingsService();
-export default settingsServiceInstance;
+const settingsService = new SettingsService();
+export default settingsService;

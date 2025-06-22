@@ -1,9 +1,10 @@
 import { HttpService } from "@/services/httpService";
+import { COOKIE_NAMES } from "@/utils/cookiesUtils";
 
 class UploadService {
   private request = new HttpService();
 
-  async uploadImage(file: File, cookieName: string) {
+  async uploadImage(file: File, cookieName: COOKIE_NAMES) {
     return this.request.upload<{ url: string; phash: string }>(
       "/static/upload",
       file,

@@ -1,5 +1,5 @@
 import getBaseUrl, { BaseUrlProdType } from "@/services/baseUrl";
-import { getCookie, setCookie } from "@/utils/cookiesUtils";
+import { COOKIE_NAMES, getCookie, setCookie } from "@/utils/cookiesUtils";
 
 interface AuthTokenPair {
   accessToken: string;
@@ -52,10 +52,10 @@ export class HttpService {
   }
 
   private async requestWithRetry<T>(
-    method: "GET" | "POST",
+    method: "GET" | "POST" | "PATCH",
     path: string,
     data: unknown = null,
-    cookieName?: string
+    cookieName?: COOKIE_NAMES
   ): Promise<T | HttpError> {
     let token: string | undefined;
 
@@ -73,7 +73,7 @@ export class HttpService {
       return fetch(`${this.baseUrl}${path}`, {
         method,
         headers,
-        ...(method === "POST" ? { body: JSON.stringify(data) } : {}),
+        ...(method === "POST" || method === "PATCH" ? { body: JSON.stringify(data) } : {}),
       });
     };
 
@@ -99,13 +99,21 @@ export class HttpService {
   async post<T>(
     path: string,
     data: unknown,
-    cookieName?: string
+    cookieName?: COOKIE_NAMES
   ): Promise<T | HttpError> {
     return this.requestWithRetry<T>("POST", path, data, cookieName);
   }
 
-  async get<T>(path: string, cookieName?: string): Promise<T | HttpError> {
+  async get<T>(path: string, cookieName?: COOKIE_NAMES): Promise<T | HttpError> {
     return this.requestWithRetry<T>("GET", path, undefined, cookieName);
+  }
+
+  async patch<T>(
+    path: string,
+    data: unknown,
+    cookieName?: COOKIE_NAMES
+  ): Promise<T | HttpError> {
+    return this.requestWithRetry<T>("PATCH", path, data, cookieName);
   }
 
   async upload<T>(
@@ -128,8 +136,8 @@ export class HttpService {
       if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`;
 
       //return fetch(`${this.baseUrl}${path}`, {
-      //return fetch(`https://seal-app-wzqhf.ondigitalocean.app${path}`, {
-      return fetch(`http://localhost:8000${path}`, {
+      return fetch(`https://seal-app-wzqhf.ondigitalocean.app${path}`, {
+     // return fetch(`http://localhost:8000${path}`, {
         method: "POST",
         // headers,
         body: formData,

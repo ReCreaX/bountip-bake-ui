@@ -17,23 +17,11 @@ import { AccountSettingsModal } from "@/components/Modals/Settings/components/Ac
 import { PasswordSettingsModal } from "@/components/Modals/Settings/components/PasswordSettingsModal";
 import { OperatingHoursModal } from "@/components/Modals/Settings/components/OperatingHoursModal";
 import settingsItems from "@/data/settingItems";
-import { BusinessDetailsType } from "@/types/businessTypes";
 
 const SettingsPage: React.FC = () => {
   const [activeModal, setActiveModal] = useState<string | null>(null);
 
-  // Sample data
-  const [businessDetails, setBusinessDetails] = useState<BusinessDetailsType>({
-    name: "Jacob Jones",
-    email: "business@example.com",
-    phone: "08062236427",
-    country: "Nigeria",
-    state: "Enugu",
-    city: "Owerri",
-    address: "Enugu",
-    businessType: "Bakery",
-    postalCode: "734007",
-  });
+
 
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([
     { id: "1", name: "Cash", type: "cash", enabled: false },
@@ -109,8 +97,8 @@ const SettingsPage: React.FC = () => {
       <BusinessDetailsModal
         isOpen={activeModal === "business-info"}
         onClose={() => setActiveModal(null)}
-        businessDetails={businessDetails}
-        onSave={setBusinessDetails}
+        
+       
       />
 
       <PaymentMethodsModal
