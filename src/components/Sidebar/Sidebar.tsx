@@ -7,7 +7,7 @@ import Image from "next/image";
 import { LogOut, Settings } from "lucide-react";
 import { DashboardSidebarNavigationData } from "@/data/SidebarNavigationData";
 import AssetsFiles from "@/assets";
-import { getCookie } from "@/utils/cookiesUtils";
+import { COOKIE_NAMES, getCookie } from "@/utils/cookiesUtils";
 import { UserType } from "@/types/userTypes";
 import { useModalStore } from "@/stores/useUIStore";
 import TooltipWrapper from "../ToolTip/TooltipWrapper";
@@ -17,7 +17,8 @@ const DashboardSidebarLayout = () => {
   const pathname = usePathname();
   const activeId = pathname.split("/")[1] || "dashboard";
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const user = getCookie<UserType>("bountipLoginUser");
+  // const user = getCookie<UserType>("bountipLoginUser");
+  const user = getCookie<UserType>(COOKIE_NAMES.BOUNTIP_LOGIN_USER);
 
   const sidebarWidth = showFullDashboardSidebar ? "w-[300px]" : "w-20";
 

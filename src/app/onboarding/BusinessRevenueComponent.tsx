@@ -1,6 +1,7 @@
 import { Upload, CheckCircle, Loader2, X } from "lucide-react";
 import { useRef, useState } from "react";
 import uploadService from "@/services/uploadService"; // Adjust path as needed
+import { COOKIE_NAMES } from "@/utils/cookiesUtils";
 
 interface BusinessRevenueComponentProps {
   onRevenueChange?: (value: number) => void;
@@ -44,7 +45,8 @@ const BusinessRevenueComponent: React.FC<BusinessRevenueComponentProps> = ({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const response: any = await uploadService.uploadImage(
         file,
-        "bountipRegisteredUsers"
+        COOKIE_NAMES.BOUNTIP_REGISTERED_USERS,
+        // "bountipRegisteredUsers"
       );
       console.log(response)
 

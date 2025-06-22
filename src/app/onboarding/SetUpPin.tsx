@@ -1,6 +1,6 @@
 import { useAuthStore } from "@/stores/useAuthStore";
 import PinInput from "@/components/Inputs/PinInput";
-import { setCookie } from "@/utils/cookiesUtils";
+import { COOKIE_NAMES, setCookie } from "@/utils/cookiesUtils";
 import { toast } from "sonner";
 import authService from "@/services/authServices";
 
@@ -38,7 +38,8 @@ const SetUpPin = ({ onNext }: SetUpPinProps) => {
 
       if (response.data?.tokens) {
         setCookie(
-          "bountipRegisteredUsers",
+          COOKIE_NAMES.BOUNTIP_REGISTERED_USERS,
+          // "bountipRegisteredUsers",
           {
             accessToken: response.data.tokens.accessToken,
             refreshToken: response.data.tokens.refreshToken,

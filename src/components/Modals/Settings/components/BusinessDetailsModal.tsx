@@ -6,6 +6,7 @@ import { BusinessDetails } from "@/types/settingTypes";
 import SettingFiles from "@/assets/icons/settings";
 import { businessService } from "@/services/businessService";
 import { BusinessAndOutlet, BusinessResponse } from "@/types/businessTypes";
+import { COOKIE_NAMES } from "@/utils/cookiesUtils";
 
 interface BusinessDetailsModalProps {
   isOpen: boolean;
@@ -34,7 +35,8 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({
     const fetchBusiness = async () => {
       try {
         const res = (await businessService.getUserBusiness(
-          "bountipLoginUserTokens"
+          // "bountipLoginUserTokens"
+          COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS
         )) as BusinessResponse;
         console.log("This is res ----", res);
         if ("error" in res || !res.status) {

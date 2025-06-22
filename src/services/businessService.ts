@@ -1,5 +1,6 @@
 import { OnboardBusinessData } from "@/types/businessTypes";
 import { HttpService } from "./httpService";
+import { COOKIE_NAMES } from "@/utils/cookiesUtils";
 
 class BusinessService {
   private request = new HttpService();
@@ -17,11 +18,12 @@ class BusinessService {
         currency: data.currency,
         revenueRange: data.revenueRange,
       },
-      "bountipRegisteredUsers"
+      COOKIE_NAMES.BOUNTIP_REGISTERED_USERS
+      //"bountipRegisteredUsers"
     );
   }
 
-  async getUserBusiness(cookieName= "bountipRegisteredUsers") {
+  async getUserBusiness(cookieName= COOKIE_NAMES.BOUNTIP_REGISTERED_USERS) {
     return this.request.get("/business", cookieName);
   }
 }

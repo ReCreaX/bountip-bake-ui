@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useModalStore } from "@/stores/useUIStore";
-import { removeCookie } from "@/utils/cookiesUtils";
+import { COOKIE_NAMES, removeCookie } from "@/utils/cookiesUtils";
 
 export default function SuccessModal() {
   const router = useRouter();
@@ -28,7 +28,8 @@ export default function SuccessModal() {
     console.log("Testing this");
     setShowSignUpSuccessModal(false);
     router.push(`/onboarding`);
-    removeCookie("regUserEmail");
+    removeCookie(COOKIE_NAMES.REG_USER_EMAIL,)
+    //removeCookie("regUserEmail");
   };
 
   return (

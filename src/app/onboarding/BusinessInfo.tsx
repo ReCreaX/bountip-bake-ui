@@ -3,7 +3,7 @@ import { ChevronDown, Plus, X, Check } from "lucide-react";
 import BusinessRevenueComponent from "./BusinessRevenueComponent";
 import { businessService } from "@/services/businessService";
 import { toast } from "sonner";
-import { getCookie, removeCookie } from "@/utils/cookiesUtils";
+import { COOKIE_NAMES, getCookie, removeCookie } from "@/utils/cookiesUtils";
 import { useRouter } from "next/navigation";
 import { BusinessAndOutlet, BusinessResponse } from "@/types/businessTypes";
 
@@ -107,10 +107,14 @@ const BusinessInfo = () => {
     console.log()
 
     try {
+      // const Tokens = getCookie<{
+      //   accessToken: string;
+      //   refreshToken: string;
+      // }>("bountipLoginUserTokens");
       const Tokens = getCookie<{
         accessToken: string;
         refreshToken: string;
-      }>("bountipLoginUserTokens");
+      }>(COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS); // Use the constant COOKIE_NAMES for better maintainability
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const response: any = await businessService.onboardBusiness({
         businessId: businessId as number,
@@ -127,7 +131,8 @@ const BusinessInfo = () => {
           duration: 4000,
           position: "bottom-right",
         });
-        removeCookie("bountipRegisteredUsers");
+        // removeCookie("bountipRegisteredUsers");
+        removeCookie(COOKIE_NAMES.BOUNTIP_REGISTERED_USERS);
         console.log(Tokens)
         if(Tokens?.accessToken && Tokens?.refreshToken) {
           router.push("/dashboard")

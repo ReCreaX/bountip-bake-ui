@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import AuthForm from "@/components/Forms/AuthForm";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useRouter, useSearchParams } from "next/navigation";
-import { getCookie } from "@/utils/cookiesUtils";
+import { COOKIE_NAMES, getCookie } from "@/utils/cookiesUtils";
 
 const AuthPageClient = () => {
   const router = useRouter();
@@ -15,10 +15,14 @@ const AuthPageClient = () => {
   const { setPinLogin } = useAuthStore();
 
   useEffect(() => {
+    // const token = getCookie<{
+    //   accessToken: string;
+    //   refreshToken: string;
+    // }>("bountipLoginUserTokens");
     const token = getCookie<{
       accessToken: string;
       refreshToken: string;
-    }>("bountipLoginUserTokens");
+    }>(COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS); // Use the constant COOKIE_NAMES for better maintainability
 
     console.log(token);
     if (token?.accessToken) {
@@ -49,13 +53,13 @@ const AuthPageClient = () => {
   };
   return (
     <section className="min-h-screen flex">
-      <aside className="flex-1">
+      <aside className="flex-1 relative min-h-screen">
         <Image
           src={AssetsFiles.AuthBgImage}
-          className="h-full w-full object-cover"
-          height={100}
-          width={100}
           alt="Auth pages"
+          fill
+          className="object-cover"
+          style={{ objectPosition: '20% center' }}
         />
       </aside>
 

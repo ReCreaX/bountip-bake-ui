@@ -4,7 +4,7 @@ import AssetsFiles from "@/assets";
 import SuccessModal from "@/components/Modals/Auth/SuccessModal";
 import authService from "@/services/authServices";
 import { useModalStore } from "@/stores/useUIStore";
-import { getCookie, setCookie } from "@/utils/cookiesUtils";
+import { COOKIE_NAMES, getCookie, setCookie } from "@/utils/cookiesUtils";
 import { Mail } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -17,7 +17,9 @@ const VerifyPage = () => {
   const { setShowSignUpSuccessModal, showsignUpSuccessModal } = useModalStore();
   const router = useRouter();
 
-  const user = getCookie<{ email: string; name: string }>("regUserEmail");
+  //const user = getCookie<{ email: string; name: string }>("regUserEmail");
+  const user = getCookie<{ email: string; name: string }>(COOKIE_NAMES.REG_USER_EMAIL);
+
 
   const firstName = user?.name?.split(" ")[0];
 
@@ -104,8 +106,16 @@ const VerifyPage = () => {
       setShowSignUpSuccessModal(true);
 
       // Email verification uses bountipRegisteredUsers cookie
+      // setCookie(
+      //   "bountipRegisteredUsers",
+      //   {
+      //     accessToken: response.data.tokens.accessToken,
+      //     refreshToken: response.data.tokens.refreshToken,
+      //   },
+      //   { expiresInMinutes: 10080 } // 7 days
+      // );
       setCookie(
-        "bountipRegisteredUsers",
+        COOKIE_NAMES.BOUNTIP_REGISTERED_USERS,
         {
           accessToken: response.data.tokens.accessToken,
           refreshToken: response.data.tokens.refreshToken,

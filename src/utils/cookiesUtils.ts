@@ -1,4 +1,13 @@
-import Cookies from 'js-cookie';
+import Cookies from "js-cookie";
+
+export enum COOKIE_NAMES {
+  RESET_USER_EMAIL = "resetUserEmail",
+  TOKEN_USER_EMAIL = "tokenUserEmail",
+  BOUNTIP_REGISTERED_USERS = "bountipRegisteredUsers",
+  REG_USER_EMAIL = "regUserEmail",
+  BOUNTIP_LOGIN_USER = "bountipLoginUser",
+  BOUNTIP_LOGIN_USER_TOKENS = "bountipLoginUserTokens",
+}
 
 type ExtendedCookieOptions = Cookies.CookieAttributes & {
   expiresInMinutes?: number;
@@ -19,7 +28,7 @@ export const setCookie = (
     finalOptions.expires = expiresInMinutes / (24 * 60);
   }
 
-  const cookieValue = typeof value === 'string' ? value : JSON.stringify(value);
+  const cookieValue = typeof value === "string" ? value : JSON.stringify(value);
   Cookies.set(key, cookieValue, finalOptions);
 };
 

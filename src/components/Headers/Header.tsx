@@ -2,7 +2,7 @@
 import AssetsFiles from "@/assets";
 import { useModalStore } from "@/stores/useUIStore";
 import { UserType } from "@/types/userTypes";
-import { getCookie } from "@/utils/cookiesUtils";
+import { COOKIE_NAMES, getCookie } from "@/utils/cookiesUtils";
 import { Bell, ChevronDown, ChevronsLeftRight, Search } from "lucide-react";
 import Image from "next/image";
 
@@ -10,7 +10,8 @@ const Header = () => {
   const { setShowFullDashboardSidebar, showFullDashboardSidebar } =
     useModalStore();
 
-  const user = getCookie<UserType>("bountipLoginUser");
+  // const user = getCookie<UserType>("bountipLoginUser");
+  const user = getCookie<UserType>(COOKIE_NAMES.BOUNTIP_LOGIN_USER);
   return (
     <header className="flex items-center justify-between p-4 bg-white shadow-md">
       <section className="flex items-center gap-4">

@@ -6,7 +6,7 @@ import Image, { StaticImageData } from "next/image";
 import SetUpPin from "./SetUpPin";
 import BusinessInfo from "./BusinessInfo";
 import React, { useCallback, useEffect } from "react";
-import { getCookie } from "@/utils/cookiesUtils";
+import { COOKIE_NAMES, getCookie } from "@/utils/cookiesUtils";
 
 const OnboardingClient = () => {
   const router = useRouter();
@@ -24,7 +24,8 @@ const OnboardingClient = () => {
   const isBusinessStep = currentStep === "business";
 
   const userTokens = getCookie<{ accessToken: string; refreshToken: string }>(
-    "bountipRegisteredUsers"
+    // "bountipRegisteredUsers"
+    COOKIE_NAMES.BOUNTIP_REGISTERED_USERS
   );
   useEffect(() => {
     const checkIfUserRegistered = () => {

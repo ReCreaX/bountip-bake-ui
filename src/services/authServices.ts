@@ -8,6 +8,7 @@ import {
   ResetPasswordData,
 } from "@/types/authTypes";
 import { HttpService } from "./httpService";
+import { COOKIE_NAMES } from "@/utils/cookiesUtils";
 
 class AuthService {
   private request = new HttpService();
@@ -33,7 +34,8 @@ class AuthService {
     return this.request.post(
       "/auth/set-pin",
       { pin: data.pin },
-      "bountipRegisteredUsers"
+      COOKIE_NAMES.BOUNTIP_REGISTERED_USERS
+      // "bountipRegisteredUsers"
     );
   }
 

@@ -19,7 +19,7 @@ import { useAuthStore } from "@/stores/useAuthStore";
 import PinInput from "../Inputs/PinInput";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { getCookie, setCookie } from "@/utils/cookiesUtils";
+import { COOKIE_NAMES, getCookie, setCookie } from "@/utils/cookiesUtils";
 import authService from "@/services/authServices";
 import { UserType } from "@/types/userTypes";
 
@@ -116,7 +116,8 @@ const AuthForm = ({ mode }: Props) => {
         position: "bottom-right",
       });
       setCookie(
-        "regUserEmail",
+        COOKIE_NAMES.REG_USER_EMAIL,
+        // "regUserEmail",
         { email: data.email, name: data.fullName },
         { expiresInMinutes: 30 }
       );
@@ -149,12 +150,16 @@ const AuthForm = ({ mode }: Props) => {
       };
       console.log("User data:", response);
       // Store user data
-      setCookie("bountipLoginUser", userData, { expiresInMinutes: 60 * 120 });
-      const userTokens = getCookie("bountipRegisteredUsers");
+      // setCookie("bountipLoginUser", userData, { expiresInMinutes: 60 * 120 });
+      setCookie(COOKIE_NAMES.BOUNTIP_LOGIN_USER, userData, { expiresInMinutes: 60 * 120 });
+      // const userTokens = getCookie("bountipRegisteredUsers");
+      const userTokens = getCookie(COOKIE_NAMES.BOUNTIP_REGISTERED_USERS);
+      
 
       // Store tokens as object under a login-specific cookie name
       setCookie(
-        "bountipLoginUserTokens",
+        // "bountipLoginUserTokens",
+        COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS,
         {
           accessToken: response.data.tokens.accessToken,
           refreshToken: response.data.tokens.refreshToken,
@@ -195,7 +200,8 @@ const AuthForm = ({ mode }: Props) => {
       // The response should contain tokens if successful
       if (response.data?.tokens) {
         setCookie(
-          "bountipRegisteredUsers",
+          COOKIE_NAMES.BOUNTIP_REGISTERED_USERS,
+          // "bountipRegisteredUsers",
           {
             accessToken: response.data.tokens.accessToken,
             refreshToken: response.data.tokens.refreshToken,
