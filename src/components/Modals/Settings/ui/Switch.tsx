@@ -8,28 +8,27 @@ interface SwitchProps {
 
 export const Switch: React.FC<SwitchProps> = ({ checked, onChange, label }) => {
   return (
-    <label className="flex items-center cursor-pointer">
+    <label className="flex items-center cursor-pointer space-x-3">
       <div className="relative">
         <input
           type="checkbox"
           checked={checked}
           onChange={(e) => onChange(e.target.checked)}
-          className="sr-only"
+          className="sr-only peer"
         />
         <div
-          className={`w-10 h-6 rounded-full transition-colors ${
+          className={`w-8 h-3 rounded-full transition-colors duration-200 ${
             checked ? "bg-green-500" : "bg-gray-300"
           }`}
-        >
-          <div
-            className={`w-4 h-4 bg-white rounded-full shadow transform transition-transform mt-1 ${
-              checked ? "translate-x-5" : "translate-x-1"
-            }`}
-          />
-        </div>
+        ></div>
+        <div
+          className={`absolute top-0.5 left-0.5 w-2 h-2 bg-white rounded-full shadow transition-transform duration-200 ${
+            checked ? "translate-x-5" : "translate-x-0"
+          }`}
+        />
       </div>
       {label && (
-        <span className="ml-3 text-sm font-medium text-gray-700">{label}</span>
+        <span className="text-sm font-medium text-gray-700">{label}</span>
       )}
     </label>
   );

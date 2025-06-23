@@ -10,8 +10,8 @@ export type OnboardBusinessData = {
 };
 
 export interface BusinessAndOutlet {
-  businessId: number | null;
-  outletId: number | null;
+  businessId: number | string;
+  outletId: number | string;
 }
 export interface BusinessResponse {
   error?: string;

@@ -82,3 +82,27 @@ export interface LabelSettings {
     price: boolean;
   };
 }
+
+export interface BusinessLocation {
+  id: string;
+  name: string;
+  address: string;
+  phoneNumber: string;
+  isDefault: boolean;
+}
+
+interface DayHours {
+  open: string;
+  close: string;
+  isActive: boolean;
+}
+
+export interface OperatingHoursType {
+  sunday: DayHours;
+  monday: DayHours;
+  tuesday: DayHours;
+  wednesday: DayHours;
+  thursday: DayHours;
+  friday: DayHours;
+  saturday: DayHours;
+}

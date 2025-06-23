@@ -1,10 +1,11 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { PriceSettingsModal } from "@/components/Modals/Settings/components/PriceSettingsModal";
 import { PaymentMethodsModal } from "@/components/Modals/Settings/components/PaymentMethodsModal";
 import { BusinessDetailsModal } from "@/components/Modals/Settings/components/BusinessDetailsModal";
 import {
+  BusinessLocation,
   PaymentMethod,
   PriceTier,
 } from "@/types/settingTypes";
@@ -17,11 +18,51 @@ import { AccountSettingsModal } from "@/components/Modals/Settings/components/Ac
 import { PasswordSettingsModal } from "@/components/Modals/Settings/components/PasswordSettingsModal";
 import { OperatingHoursModal } from "@/components/Modals/Settings/components/OperatingHoursModal";
 import settingsItems from "@/data/settingItems";
+import { LocationSettingsModal } from "@/components/Modals/Settings/components/LocationSettingsModal";
+import { businessService } from "@/services/businessService";
+import { BusinessAndOutlet, BusinessResponse } from "@/types/businessTypes";
+import { COOKIE_NAMES } from "@/utils/cookiesUtils";
 
 const SettingsPage: React.FC = () => {
+  const [{ businessId, outletId }, setBusinessOutlet] =
+    useState<BusinessAndOutlet>({
+      businessId: "",
+      outletId: "",
+    });
   const [activeModal, setActiveModal] = useState<string | null>(null);
 
+  const [businessData, setBusinessData] = useState(null);
+  const [outletsData, setOutletsData] = useState([]);
 
+  useEffect(() => {
+    if (typeof businessId === "number" && typeof outletId === "number") return;
+
+    const fetchBusiness = async () => {
+      try {
+        const res = (await businessService.getUserBusiness(
+          COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS
+        )) as BusinessResponse;
+        console.log("This is the business response:", res);
+        if ("error" in res || !res.status) {
+          console.warn("Failed to fetch business:", res);
+          return;
+        }
+
+        const businessId = res.data?.business?.id ?? null;
+        const outletId = res.data?.outlets?.[0]?.outlet?.id ?? null;
+        console.log("This is business----", businessId, outletId);
+        setBusinessData(res.data?.business);
+        setOutletsData(res.data?.outlets);
+        if (outletId && businessId) {
+          setBusinessOutlet({ businessId, outletId });
+        }
+      } catch (err) {
+        console.error("Unexpected error while fetching business:", err);
+      }
+    };
+
+    fetchBusiness();
+  }, [businessId, outletId]);
 
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([
     { id: "1", name: "Cash", type: "cash", enabled: false },
@@ -45,8 +86,6 @@ const SettingsPage: React.FC = () => {
       discountPercent: 0,
     },
   ]);
-
-  
 
   const handleSettingClick = (id: string) => {
     setActiveModal(id);
@@ -97,8 +136,7 @@ const SettingsPage: React.FC = () => {
       <BusinessDetailsModal
         isOpen={activeModal === "business-info"}
         onClose={() => setActiveModal(null)}
-        
-       
+        outletId={outletId}
       />
 
       <PaymentMethodsModal
@@ -108,12 +146,20 @@ const SettingsPage: React.FC = () => {
         onSave={setPaymentMethods}
       />
 
+      <LocationSettingsModal
+        isOpen={activeModal === "location"} // or whatever ID you use for location in your settingsItems
+        onClose={() => setActiveModal(null)}
+        businessId={businessId}
+        locationData={outletsData}
+      />
+
       <PriceSettingsModal
         isOpen={activeModal === "pricing"}
         onClose={() => setActiveModal(null)}
         priceTiers={priceTiers}
         onSave={setPriceTiers}
       />
+
       <PasswordSettingsModal
         isOpen={activeModal === "password-settings"}
         onClose={() => setActiveModal(null)}
@@ -138,6 +184,10 @@ const SettingsPage: React.FC = () => {
       <OperatingHoursModal
         isOpen={activeModal === "operating-hours"}
         onClose={() => setActiveModal(null)}
+        businessId={businessId}
+        businessData={businessData}
+        outletsData={outletsData}
+        outletId={outletId}
       />
       <InvoiceCustomizationModal
         isOpen={activeModal === "receipt-customization"}

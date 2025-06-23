@@ -25,7 +25,7 @@ const settingsItems:ISettingItem[] = [
       color: "border border-[#15BA5C] text-blue-600",
     },
     {
-      id: "locabg-blue-100tion",
+      id: "location",
       title: "Location",
       description: "Add and remove your business location",
       icon: SettingFiles.LocationIcon,

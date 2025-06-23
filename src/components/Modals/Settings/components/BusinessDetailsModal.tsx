@@ -3,12 +3,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { Modal } from "../ui/Modal";
 import { Input } from "../ui/Input";
 import SettingFiles from "@/assets/icons/settings";
-import { businessService } from "@/services/businessService";
-import {
-  BusinessAndOutlet,
-  BusinessDetailsType,
-  BusinessResponse,
-} from "@/types/businessTypes";
+import { BusinessDetailsType } from "@/types/businessTypes";
 import { COOKIE_NAMES } from "@/utils/cookiesUtils";
 import { Check, ChevronDown, Plus, X, Upload, Loader2 } from "lucide-react";
 import uploadService from "@/services/uploadService";
@@ -20,13 +15,16 @@ import { toast } from "sonner";
 interface BusinessDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  outletId: string | number | null;
 }
 const defaultBusinessTypes = ["Bakery", "Restaurant", "Bar"];
 
 export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({
   isOpen,
   onClose,
+  outletId,
 }) => {
+  
   const [details, setDetails] = useState<BusinessDetailsType>({
     name: "Jacob Jones",
     email: "business@example.com",
@@ -38,11 +36,8 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({
     businessType: "Bakery",
     postalCode: "734007",
   });
-  const [{ businessId, outletId }, setBusinessOutlet] =
-    useState<BusinessAndOutlet>({
-      businessId: null,
-      outletId: null,
-    });
+  
+
   const [newBusinessType, setNewBusinessType] = useState("");
   const [businessTypes, setBusinessTypes] = useState(defaultBusinessTypes);
   const [businessType, setBusinessType] = useState("");
@@ -54,32 +49,6 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string>("");
   const [uploadError, setUploadError] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (typeof businessId === "number" && typeof outletId === "number") return;
-
-    const fetchBusiness = async () => {
-      try {
-        const res = (await businessService.getUserBusiness(
-          COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS
-        )) as BusinessResponse;
-        console.log("This is the business response:", res);
-        if ("error" in res || !res.status) {
-          console.warn("Failed to fetch business:", res);
-          return;
-        }
-
-        const businessId = res.data?.business?.id ?? null;
-        const outletId = res.data?.outlets?.[0]?.outlet?.id ?? null;
-        console.log("This is business----", businessId, outletId);
-        setBusinessOutlet({ businessId, outletId });
-      } catch (err) {
-        console.error("Unexpected error while fetching business:", err);
-      }
-    };
-
-    fetchBusiness();
-  }, [businessId, outletId]);
 
   useEffect(() => {
     if (details?.logoUrl) {
