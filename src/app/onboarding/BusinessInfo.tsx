@@ -40,8 +40,8 @@ const BusinessInfo = () => {
   const [uploadedImageUrl, setUploadedImageUrl] = useState("");
   const [{ businessId, outletId }, setBusinessOutlet] =
     useState<BusinessAndOutlet>({
-      businessId: null,
-      outletId: null,
+      businessId: "",
+      outletId: "",
     });
 
   const handleAddBusinessType = () => {
@@ -71,10 +71,10 @@ const BusinessInfo = () => {
           return;
         }
 
-        const businessId = res.data?.business?.id ?? null;
-        const outletId = res.data?.outlets?.[0]?.outlet?.id ?? null;
+        const businessId = res.data?.business?.id as string | number;
+        const outletId = res.data?.outlets?.[0]?.outlet?.id as string | number;
         console.log("This is business----", businessId, outletId);
-        setBusinessOutlet({ businessId, outletId });
+        setBusinessOutlet({ businessId , outletId });
       } catch (err) {
         console.error("Unexpected error while fetching business:", err);
       }
