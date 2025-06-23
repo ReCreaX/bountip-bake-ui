@@ -6,13 +6,14 @@ import SettingFiles from "@/assets/icons/settings";
 import Image from "next/image";
 import { Check, Trash2 } from "lucide-react";
 import settingsService from "@/services/settingsService";
+import { toast } from "sonner";
 
 interface LocationSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   locationData: any[] | null;
-  businessId:string|null;
+  businessId: string | null;
   businessLocations: BusinessLocation[];
 }
 
@@ -22,7 +23,7 @@ export const LocationSettingsModal: React.FC<LocationSettingsModalProps> = ({
   businessId,
   locationData,
 }) => {
-  const [locations, setLocations] = useState<BusinessLocation[]| []>([]);
+  const [locations, setLocations] = useState<BusinessLocation[] | []>([]);
   const [newLocations, setNewLocations] = useState<Partial<BusinessLocation>[]>(
     [{ name: "", address: "", phoneNumber: "" }]
   );
@@ -43,8 +44,6 @@ export const LocationSettingsModal: React.FC<LocationSettingsModalProps> = ({
   const otherLocations = locations.filter((loc) => !loc.isDefault);
 
   const addNewLocationField = () => {
-
-    
     setNewLocations((prev) => [
       ...prev,
       { name: "", address: "", phoneNumber: "" },
@@ -96,16 +95,16 @@ export const LocationSettingsModal: React.FC<LocationSettingsModalProps> = ({
 
   const handleSave = async () => {
     if (!businessId) return;
-  
+
     // Only include locations that have a name and address filled in
     const validNewLocations = newLocations
       .filter((loc) => loc.name && loc.address && loc.phoneNumber)
       .map((loc) => ({
         name: loc.name!,
         address: loc.address!,
-        phoneNumber: loc.phoneNumber!
+        phoneNumber: loc.phoneNumber!,
       }));
-  
+
     try {
       // Submit each location to the backend
       await Promise.all(
@@ -118,13 +117,13 @@ export const LocationSettingsModal: React.FC<LocationSettingsModalProps> = ({
           })
         )
       );
-  
+      setNewLocations([{ name: "", address: "", phoneNumber: "" }]);
+      toast.success("Locations added succesfully")
       onClose(); // Close the modal after saving
     } catch (error) {
       console.error("Error saving locations", error);
     }
   };
-  
 
   return (
     <Modal
