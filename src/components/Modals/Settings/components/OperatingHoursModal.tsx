@@ -7,16 +7,14 @@ import settingsService from "@/services/settingsService";
 import { OperatingHoursType } from "@/types/settingTypes";
 import { toast } from "sonner";
 import { ApiResponseType } from "@/types/httpTypes";
-import { businessService } from "@/services/businessService";
-import { COOKIE_NAMES } from "@/utils/cookiesUtils";
 
 interface OperatingHoursModalProps {
   isOpen: boolean;
   onClose: () => void;
   businessId: string | number | null;
   outletId: string | number | null;
-  outletsData:any[];
-  businessData:any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  outletsData: any[];
 }
 
 interface Location {
@@ -36,27 +34,12 @@ interface DayHours {
 export const OperatingHoursModal: React.FC<OperatingHoursModalProps> = ({
   isOpen,
   onClose,
-outletsData,
-businessData,
-businessId,
+  outletsData,
+  businessId,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   outletId,
 }) => {
-  
-
-  const [locations, setLocations] = useState<Location[]>([
-    {
-      id: "1",
-      name: "Lagos, Nigeria",
-      address: "652 C.Preston Rd, Inglewood, Maine 58530",
-      expanded: true,
-    },
-    {
-      id: "2",
-      name: "Abuja, Nigeria",
-      address: "2464 Royal Ln, Mesa, New Jersey 45463",
-      expanded: false,
-    },
-  ]);
+  const [locations, setLocations] = useState<Location[]>([]);
 
   const [operatingHours, setOperatingHours] = useState<
     Record<string, DayHours[]>
@@ -110,29 +93,44 @@ businessId,
       },
     ],
   });
-useEffect(() => {
-  // const fetchBusiness = async () => {
-  //   try {
-  //     const res = (await businessService.getUserBusiness(
-  //       COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS
-  //     )) as ApiResponseType;
+  useEffect(() => {
+    if (!outletsData || outletsData.length === 0) return;
 
-  //     console.log("This is the business response:", res);
+    const newLocations = outletsData.map((item) => ({
+      id: String(item.outlet.id),
+      name: item.outlet.name || "Unnamed Outlet",
+      address: item.outlet.address || "No address provided",
+      expanded: false,
+    }));
 
-  //     if ("error" in res || !res.status) {
-  //       console.warn("Failed to fetch business:", res);
-  //       return;
-  //     }
+    setLocations(newLocations);
 
-  //     const businessData = res?.data.data;
-  //     setBusinessLocationsData(businessData);
-  //   } catch (err) {
-  //     console.error("Unexpected error while fetching business:", err);
-  //   }
-  // };
+    const initialOperatingHours: Record<string, DayHours[]> = {};
 
-  // fetchBusiness();
-}, []);
+    newLocations.forEach((loc) => {
+      const rawHours = outletsData.find((o) => String(o.outlet.id) === loc.id)
+        ?.outlet.operatingHours;
+
+      const defaultDayHours = [
+        "sunday",
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+      ].map((day) => ({
+        day: day.charAt(0).toUpperCase() + day.slice(1),
+        enabled: rawHours?.[day]?.isActive || false,
+        openTime: rawHours?.[day]?.open || "00:00",
+        closeTime: rawHours?.[day]?.close || "00:00",
+      }));
+
+      initialOperatingHours[loc.id] = defaultDayHours;
+    });
+
+    setOperatingHours(initialOperatingHours);
+  }, [outletsData]);
 
   const toggleLocation = (locationId: string) => {
     setLocations((prev) =>
@@ -166,59 +164,80 @@ useEffect(() => {
   };
 
   const handleSubmit = async () => {
-    //console.log(businessData, outletsData)
-    if (!outletId || !businessId) {
-      console.error("Outlet ID is missing.");
+    if (!businessId) {
+      console.error("Business ID is missing.");
       return;
     }
 
-    const locationData = operatingHours[1];
+    const updatePromises = Object.entries(operatingHours).map(
+      async ([outletId, dayHours]) => {
+        const dto: Partial<OperatingHoursType> = {};
 
-    if (!locationData) {
-      console.error("No operating hours for this outlet.");
-      return;
-    }
-
-    const dto: Partial<OperatingHoursType> = {};
-
-    locationData.forEach(({ day, enabled, openTime, closeTime }) => {
-      const key = day.toLowerCase() as keyof OperatingHoursType;
-      dto[key] = {
-        open: openTime,
-        close: closeTime,
-        isActive: enabled,
-      };
-    });
-
-    const isComplete =
-      Object.keys(dto).length === 7 &&
-      Object.keys(dto).every((day) => !!dto[day as keyof OperatingHoursType]);
-
-    if (!isComplete) {
-      console.error("DTO is missing one or more days.");
-      return;
-    }
-
-    try {
-      const result = (await settingsService.updateOperatingHours(
-        businessId as string,
-        dto as OperatingHoursType
-      )) as ApiResponseType;
-      if (result.status) {
-        toast.success("Operating hours updated successfully", {
-          duration: 3000,
+        dayHours.forEach(({ day, enabled, openTime, closeTime }) => {
+          const key = day.toLowerCase() as keyof OperatingHoursType;
+          dto[key] = {
+            open: openTime,
+            close: closeTime,
+            isActive: enabled,
+          };
         });
+
+        const isComplete =
+          Object.keys(dto).length === 7 &&
+          Object.keys(dto).every(
+            (day) => !!dto[day as keyof OperatingHoursType]
+          );
+
+        if (!isComplete) {
+          console.warn(`Skipping outlet ${outletId}: incomplete data.`);
+          return Promise.resolve({
+            outletId,
+            success: false,
+            error: "Incomplete data",
+          });
+        }
+
+        try {
+          const result = (await settingsService.updateOperatingHours(
+            outletId,
+            dto as OperatingHoursType
+          )) as ApiResponseType;
+          if (result.status) {
+            return { outletId, success: true };
+          } else {
+            throw new Error("API call failed");
+          }
+        } catch (error) {
+          console.error(`Failed to update outlet ${outletId}:`, error);
+          return { outletId, success: false, error };
+        }
       }
-    } catch (err) {
-      toast.error("Failed to update operating hours", {
-        duration: 3000,
-        position: "top-right",
-        style: { backgroundColor: "#f87171", color: "#fff" },
-      });
-      console.error("Error:", err);
-    } finally {
-      onClose();
-    }
+    );
+
+    const results = await Promise.all(updatePromises);
+
+    const successes = results.filter((r) => r.success).length;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const failures = results.filter((r) => !r.success);
+
+    // if (successes > 0) {
+    //   toast.success(`${successes} outlet(s) updated successfully`, {
+    //     duration: 3000,
+    //   });
+    // }
+
+    // if (failures.length > 0) {
+    //   toast.error(`${failures.length} outlet(s) failed to update`, {
+    //     duration: 3000,
+    //     position: "top-right",
+    //     style: { backgroundColor: "#f87171", color: "#fff" },
+    //   });
+    // }
+
+    onClose();
+    toast.success(`${successes} outlet(s) updated successfully`, {
+      duration: 3000,
+    });
   };
 
   return (
@@ -231,8 +250,6 @@ useEffect(() => {
     >
       <>
         <div className="space-y-4  overflow-y-auto">
-        {/* {console.log(businessData)}
-        {console.log(outletsData)} */}
           {locations.map((location) => (
             <div
               key={location.id}
@@ -319,7 +336,7 @@ useEffect(() => {
           ))}
           <div className="flex justify-end">
             <button
-              onClick={handleSubmit}
+              onClick={() => handleSubmit()}
               className="flex items-center justify-center gap-2 bg-[#15BA5C] w-full text-[#ffffff] py-3 rounded-[10px] font-medium text-base mt-5"
               type="button"
             >

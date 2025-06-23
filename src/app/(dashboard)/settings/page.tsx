@@ -4,11 +4,7 @@ import React, { useEffect, useState } from "react";
 import { PriceSettingsModal } from "@/components/Modals/Settings/components/PriceSettingsModal";
 import { PaymentMethodsModal } from "@/components/Modals/Settings/components/PaymentMethodsModal";
 import { BusinessDetailsModal } from "@/components/Modals/Settings/components/BusinessDetailsModal";
-import {
-  BusinessLocation,
-  PaymentMethod,
-  PriceTier,
-} from "@/types/settingTypes";
+import { PaymentMethod, PriceTier } from "@/types/settingTypes";
 import Image from "next/image";
 import { ChevronRight } from "lucide-react";
 import { LabellingSettingsModal } from "@/components/Modals/Settings/components/LabellingSettingsModal";
@@ -31,6 +27,7 @@ const SettingsPage: React.FC = () => {
     });
   const [activeModal, setActiveModal] = useState<string | null>(null);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [businessData, setBusinessData] = useState(null);
   const [outletsData, setOutletsData] = useState([]);
 
@@ -39,7 +36,8 @@ const SettingsPage: React.FC = () => {
 
     const fetchBusiness = async () => {
       try {
-        const res = (await businessService.getUserBusiness(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const res: any = (await businessService.getUserBusiness(
           COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS
         )) as BusinessResponse;
         console.log("This is the business response:", res);
@@ -51,6 +49,7 @@ const SettingsPage: React.FC = () => {
         const businessId = res.data?.business?.id ?? null;
         const outletId = res.data?.outlets?.[0]?.outlet?.id ?? null;
         console.log("This is business----", businessId, outletId);
+
         setBusinessData(res.data?.business);
         setOutletsData(res.data?.outlets);
         if (outletId && businessId) {
@@ -149,7 +148,7 @@ const SettingsPage: React.FC = () => {
       <LocationSettingsModal
         isOpen={activeModal === "location"} // or whatever ID you use for location in your settingsItems
         onClose={() => setActiveModal(null)}
-        businessId={businessId}
+        businessId={businessId as string}
         locationData={outletsData}
       />
 
@@ -185,7 +184,6 @@ const SettingsPage: React.FC = () => {
         isOpen={activeModal === "operating-hours"}
         onClose={() => setActiveModal(null)}
         businessId={businessId}
-        businessData={businessData}
         outletsData={outletsData}
         outletId={outletId}
       />

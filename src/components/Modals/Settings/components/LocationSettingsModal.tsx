@@ -14,7 +14,7 @@ interface LocationSettingsModalProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   locationData: any[] | null;
   businessId: string | null;
-  businessLocations: BusinessLocation[];
+  
 }
 
 export const LocationSettingsModal: React.FC<LocationSettingsModalProps> = ({
