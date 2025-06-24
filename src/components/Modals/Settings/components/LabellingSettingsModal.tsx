@@ -2,23 +2,37 @@
 import React, { useState } from "react";
 import { Modal } from "../ui/Modal";
 import { Button } from "../ui/Button";
-import { Input } from "../ui/Input";
 import { Switch } from "../ui/Switch";
 import SettingFiles from "@/assets/icons/settings";
+import FileUploadComponent from "@/components/Upload/FileUploadComponent";
+import Select from "../ui/Select";
 
 interface LabellingSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
+const fontSizeOptions = [
+  { value: "small", label: "Small Text Size" },
+  { value: "medium", label: "Medium Text Size" },
+  { value: "large", label: "Large Text Size" },
+];
+
+const paperSizeOptions = [
+  { value: "tape", label: "Tape Size" },
+  { value: "a4", label: "A4 Size" },
+  { value: "letter", label: "Letter Size" },
+];
+
 export const LabellingSettingsModal: React.FC<LabellingSettingsModalProps> = ({
   isOpen,
   onClose,
 }) => {
   const [formData, setFormData] = useState({
-    businessName: "Bakery Name",
-    fontSize: "Small Text Size",
-    paperSize: "Tape Size",
+    showBakeyName: false,
+    showPaymentSuccess: false,
+    fontSize: "small", // use option values here
+    paperSize: "tape", // use option values here
     showBarcode: true,
     header: "Establishment Business Text",
     customBusinessText: "Customized Business Text",
@@ -38,135 +52,202 @@ export const LabellingSettingsModal: React.FC<LabellingSettingsModalProps> = ({
     ],
     customMessage: "",
   });
+  const [imageUrl, setImageUrl] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log(imageUrl)
     onClose();
   };
 
   const toggleLabelItem = (index: number) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      labelItems: prev.labelItems.map((item, i) => 
+      labelItems: prev.labelItems.map((item, i) =>
         i === index ? { ...item, enabled: !item.enabled } : item
-      )
+      ),
     }));
   };
 
   return (
     <Modal
+      size={"xl"}
       image={SettingFiles.LabelingSettings}
       isOpen={isOpen}
       onClose={onClose}
       title="Labelling"
       subtitle="Customize your product labels"
     >
-      <div className="space-y-6">
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <h3 className="font-medium text-green-800 mb-2">Live Preview</h3>
-          <div className="bg-white border border-gray-200 rounded p-4 text-center">
-            <div className="text-sm font-bold mb-2">{formData.businessName}</div>
-            <div className="text-xs text-gray-600 mb-2">John Doe</div>
-            <div className="text-xs text-gray-600 mb-2">ABC RESTAURANT</div>
-            <div className="text-xs text-gray-600 mb-2">235-56-78-90-05-06</div>
-            <div className="text-xs">||||||||||||||||||||||||</div>
-            <div className="text-xs mt-2 text-green-600">
-              Thank you for shopping with us!
-            </div>
-          </div>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <h4 className="font-medium mb-4">Label Branding</h4>
-            <div className="space-y-4">
-              <Input
-                label="Business Name"
-                value={formData.businessName}
-                onChange={(e) => setFormData(prev => ({ ...prev, businessName: e.target.value }))}
-              />
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Font Style</label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                    <option>{formData.fontSize}</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Paper Size</label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                    <option>{formData.paperSize}</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <h4 className="font-medium mb-4">Header</h4>
-            <div className="space-y-4">
-              <Input
-                label="Show different Business Text"
-                value={formData.header}
-                onChange={(e) => setFormData(prev => ({ ...prev, header: e.target.value }))}
-              />
-              <Input
-                label="Customized Business Text"
-                value={formData.customBusinessText}
-                onChange={(e) => setFormData(prev => ({ ...prev, customBusinessText: e.target.value }))}
-              />
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-gray-700">Show business line list</label>
-                <Switch
-                  checked={formData.showBusinessLine}
-                  onChange={(checked) => setFormData(prev => ({ ...prev, showBusinessLine: checked }))}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <h4 className="font-medium mb-4">Label Information</h4>
-            <div className="space-y-3">
-              {formData.labelItems.map((item, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <span className="text-sm text-gray-700">{item.name}</span>
+      <section className="flex ">
+        <div className="space-y-6 flex-1/2">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="px-3.5 py-1.5">
+              <h4 className="font-medium mb-4">Label Branding</h4>
+              <FileUploadComponent setImageUrl={setImageUrl} />
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-[#737373]">
+                    Show Bakery name
+                  </label>
                   <Switch
-                    checked={item.enabled}
-                    onChange={() => toggleLabelItem(index)}
+                    checked={formData.showBakeyName}
+                    onChange={(checked) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        showBakeyName: checked,
+                      }))
+                    }
                   />
                 </div>
-              ))}
+
+                <div className="">
+                  <div className="flex justify-between items-center mb-4">
+                    <label className="block text-sm font-medium text-[#737373] whitespace-nowrap">
+                      Font Style
+                    </label>
+                    <div className="flex-1 ml-4 flex">
+                      <div className="flex-1 ml-4"></div>
+                      <div className="flex-1 ml-4">
+                        <Select
+                          options={fontSizeOptions}
+                          value={formData.fontSize}
+                          onChange={(val) =>
+                            setFormData((prev) => ({ ...prev, fontSize: val }))
+                          }
+                          placeholder="Select font size"
+                          className="w-full"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <label className="block text-sm font-medium text-[#737373] whitespace-nowrap">
+                      Paper Size
+                    </label>
+                    <div className="flex-1 ml-4">
+                      <div className="flex-1 ml-4 flex">
+                        <div className="flex-1 ml-4"></div>
+                        <div className="flex-1">
+                          <Select
+                            options={paperSizeOptions}
+                            value={formData.paperSize}
+                            onChange={(val) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                paperSize: val,
+                              }))
+                            }
+                            placeholder="Select paper size"
+                            className="w-full"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Custom &quot;Thank you&quot; Message
-            </label>
-            <textarea
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg resize-none"
-              rows={3}
-              value={formData.customMessage}
-              onChange={(e) => setFormData(prev => ({ ...prev, customMessage: e.target.value }))}
-              placeholder="Enter your custom message"
-            />
-          </div>
+            <div className="border border-dashed border-[#D1D1D1] rounded-[10px] px-3.5 py-2.5">
+              <h4 className="font-medium mb-4 text-[#1C1B20]">Header</h4>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-[#737373]">
+                    Show payment Success text
+                  </label>
+                  <Switch
+                    checked={formData.showPaymentSuccess}
+                    onChange={(checked) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        showPaymentSuccess: checked,
+                      }))
+                    }
+                  />
+                </div>
 
-          <Button type="submit" className="w-full">
-            Save Settings
-          </Button>
-        </form>
-      </div>
+                <div className="flex flex-col mt-1.5 gap-1.5">
+                  <label className="text-[#737373] text-sm font-medium">
+                    Customize Success text
+                  </label>
+                  <input
+                    type="text"
+                    name=""
+                    className="outline-none text-[12px]  border-2 border-[#D1D1D1] w-full px-3.5 py-2.5 bg-[#FAFAFC] rounded-[10px]"
+                    id=""
+                    placeholder="Enter Success text, e.g Payment successful!"
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        customBusinessText: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-[#737373]">
+                    Show total paid at top
+                  </label>
+                  <Switch
+                    checked={formData.showBusinessLine}
+                    onChange={(checked) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        showBusinessLine: checked,
+                      }))
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="border border-dashed border-[#D1D1D1] rounded-[10px] px-3.5 py-2.5">
+              <h4 className="font-medium mb-4 text-[#1C1B20]">
+                Label Information
+              </h4>
+              <div className="space-y-3">
+                {formData.labelItems.map((item, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between"
+                  >
+                    <span className="text-sm text-[#737373]">{item.name}</span>
+                    <Switch
+                      checked={item.enabled}
+                      onChange={() => toggleLabelItem(index)}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="border border-dashed border-[#D1D1D1] rounded-[10px] px-3.5 py-4">
+              <label className="block text-sm font-medium text-[#1C1B20] mb-2">
+                Custom &quot;Thank you&quot; Message
+              </label>
+              <textarea
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg resize-none outline-none "
+                rows={3}
+                value={formData.customMessage}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    customMessage: e.target.value,
+                  }))
+                }
+                placeholder="Enter your custom message"
+              />
+            </div>
+
+            <Button type="submit" className="w-full">
+              Save Settings
+            </Button>
+          </form>
+        </div>
+        <div className="flex-1/2"></div>
+      </section>
     </Modal>
   );
 };
-
-
-
-
-
-
-
-
-

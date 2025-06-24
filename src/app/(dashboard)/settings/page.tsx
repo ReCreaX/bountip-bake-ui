@@ -18,6 +18,7 @@ import { LocationSettingsModal } from "@/components/Modals/Settings/components/L
 import { businessService } from "@/services/businessService";
 import { BusinessAndOutlet, BusinessResponse } from "@/types/businessTypes";
 import { COOKIE_NAMES } from "@/utils/cookiesUtils";
+import { ReceiptCustomizationModal } from "@/components/Modals/Settings/components/ReceiptCustomizationModal";
 
 const SettingsPage: React.FC = () => {
   const [{ businessId, outletId }, setBusinessOutlet] =
@@ -157,6 +158,7 @@ const SettingsPage: React.FC = () => {
         onClose={() => setActiveModal(null)}
         priceTiers={priceTiers}
         onSave={setPriceTiers}
+        outletsData={outletsData}
       />
 
       <PasswordSettingsModal
@@ -172,6 +174,7 @@ const SettingsPage: React.FC = () => {
       <InventoryHubModal
         isOpen={activeModal === "inventory-hub"}
         onClose={() => setActiveModal(null)}
+        businessId={businessId as string}
       />
 
       <InvoiceCustomizationModal
@@ -187,7 +190,7 @@ const SettingsPage: React.FC = () => {
         outletsData={outletsData}
         outletId={outletId}
       />
-      <InvoiceCustomizationModal
+      <ReceiptCustomizationModal
         isOpen={activeModal === "receipt-customization"}
         onClose={() => setActiveModal(null)}
       />

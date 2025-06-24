@@ -106,3 +106,21 @@ export interface OperatingHoursType {
   friday: DayHours;
   saturday: DayHours;
 }
+
+export enum HubType{
+  CENTRAL = 'central',
+  OUTLET = 'outlet',
+  PROUCTION = 'production',
+}
+export interface InventoryHubType{
+  businessId:string | number;
+  name:string;
+  description?:string;
+  hubType:string;
+  address?:string;
+  region?:string;
+  isActive:boolean
+
+
+}
+

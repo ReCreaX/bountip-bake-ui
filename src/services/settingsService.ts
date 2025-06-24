@@ -1,7 +1,7 @@
 import { BusinessDetailsType } from "@/types/businessTypes";
 import { HttpService } from "./httpService";
 import { COOKIE_NAMES } from "@/utils/cookiesUtils";
-import { OperatingHoursType } from "@/types/settingTypes";
+import {  InventoryHubType, OperatingHoursType } from "@/types/settingTypes";
 
 class SettingsService {
   private request = new HttpService();
@@ -64,6 +64,49 @@ class SettingsService {
       {
         oldPassword: data.oldPassword,
         newPassword: data.newPassword,
+      },
+      COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS
+    );
+  }
+
+  async addPriceTier({
+    outletId,
+    name,
+    description,
+    pricingRules,
+    isActive,
+  }: {
+    outletId: number;
+    name: string;
+    description?: string;
+    pricingRules?: {
+      markupPercentage?: number;
+      discountPercentage?: number;
+      fixedMarkup?: number;
+      fixedDiscount?: number;
+    };
+    isActive?: boolean;
+  }) {
+    return this.request.post(
+      `/outlet/${outletId}/price-tier`,
+      { name, description, pricingRules, isActive },
+      COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS
+    );
+  }
+
+  async addInventoryHub({
+    businessId,
+    name,
+    address,
+    hubType
+  }: Pick<InventoryHubType, "address" | "businessId" | "name" | 'hubType'>) {
+    return this.request.post(
+      `/inventory-hubs`,
+      {
+        businessId,
+        name,
+        address,
+        hubType 
       },
       COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS
     );
