@@ -40,6 +40,7 @@ export const OperatingHoursModal: React.FC<OperatingHoursModalProps> = ({
   outletId,
 }) => {
   const [locations, setLocations] = useState<Location[]>([]);
+  const [selectAllMap, setSelectAllMap] = useState<Record<string, boolean>>({});
 
   const [operatingHours, setOperatingHours] = useState<
     Record<string, DayHours[]>
@@ -273,63 +274,93 @@ export const OperatingHoursModal: React.FC<OperatingHoursModalProps> = ({
               </div>
 
               {location.expanded && (
-                <div className="px-4 pb-4 border-t border-gray-100">
-                  <div className="space-y-3 mt-4">
-                    {operatingHours[location.id]?.map((dayHours, dayIndex) => (
-                      <div
-                        key={dayHours.day}
-                        className="flex items-center gap-4"
-                      >
-                        <div className="w-32">
-                          <Switch
-                            checked={dayHours.enabled}
-                            onChange={() =>
-                              handleDayToggle(location.id, dayIndex)
+                <div className="px-4 pb-4 border-t border-gray-100 flex flex-col gap-10">
+                  {operatingHours[location.id]?.map((dayHours, dayIndex) => (
+                    <div
+                      key={dayHours.day}
+                      className="flex items-center justify-between gap-4 relative"
+                    >
+                      <div className="w-32">
+                        <Switch
+                          checked={dayHours.enabled}
+                          onChange={() =>
+                            handleDayToggle(location.id, dayIndex)
+                          }
+                          label={dayHours.day}
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-2 flex-1 relative">
+                        <div className="flex items-center gap-2 border border-[#E6E6E6] px-2 rounded-xl">
+                          <span className="text-sm text-gray-600">From</span>
+                          <input
+                            type="time"
+                            value={dayHours.openTime}
+                            onChange={(e) =>
+                              handleTimeChange(
+                                location.id,
+                                dayIndex,
+                                "openTime",
+                                e.target.value
+                              )
                             }
-                            label={dayHours.day}
+                            disabled={!dayHours.enabled}
+                            className="px-3 py-2  rounded-md text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 disabled:text-gray-400"
                           />
                         </div>
 
-                        <div className="flex items-center gap-2 flex-1">
-                          <div className="flex items-center gap-2 border border-[#E6E6E6] px-2 rounded-xl">
-                            <span className="text-sm text-gray-600">From</span>
-                            <input
-                              type="time"
-                              value={dayHours.openTime}
-                              onChange={(e) =>
-                                handleTimeChange(
-                                  location.id,
-                                  dayIndex,
-                                  "openTime",
-                                  e.target.value
-                                )
-                              }
-                              disabled={!dayHours.enabled}
-                              className="px-3 py-2  rounded-md text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 disabled:text-gray-400"
-                            />
-                          </div>
-
-                          <div className="flex items-center gap-2 border border-[#E6E6E6] px-2 rounded-xl">
-                            <span className="text-sm text-gray-600">To</span>
-                            <input
-                              type="time"
-                              value={dayHours.closeTime}
-                              onChange={(e) =>
-                                handleTimeChange(
-                                  location.id,
-                                  dayIndex,
-                                  "closeTime",
-                                  e.target.value
-                                )
-                              }
-                              disabled={!dayHours.enabled}
-                              className="px-3 py-2 rounded-md text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 disabled:text-gray-400"
-                            />
-                          </div>
+                        <div className="flex items-center gap-2 border border-[#E6E6E6] px-2 rounded-xl">
+                          <span className="text-sm text-gray-600">To</span>
+                          <input
+                            type="time"
+                            value={dayHours.closeTime}
+                            onChange={(e) =>
+                              handleTimeChange(
+                                location.id,
+                                dayIndex,
+                                "closeTime",
+                                e.target.value
+                              )
+                            }
+                            disabled={!dayHours.enabled}
+                            className="px-3 py-2 rounded-md text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 disabled:text-gray-400"
+                          />
                         </div>
+
+                        {dayIndex === 0 && (
+                          <div className="flex items-center gap-2.5 absolute -bottom-6 left-0">
+                            <input
+                              type="checkbox"
+                              className="accent-green-600"
+                              checked={!!selectAllMap[location.id]}
+                              onChange={(e) => {
+                                const isChecked = e.target.checked;
+
+                                setSelectAllMap((prev) => ({
+                                  ...prev,
+                                  [location.id]: isChecked,
+                                }));
+
+                                setOperatingHours((prev) => ({
+                                  ...prev,
+                                  [location.id]: prev[location.id].map(
+                                    (day) => ({
+                                      ...day,
+                                      enabled: isChecked,
+                                    })
+                                  ),
+                                }));
+                              }}
+                            />
+
+                            <p className="text-[#1C1B20] text-sm">
+                              Apply to all
+                            </p>
+                          </div>
+                        )}
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>

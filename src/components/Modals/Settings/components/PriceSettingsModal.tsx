@@ -531,33 +531,7 @@ export const PriceSettingsModal: React.FC<PriceSettingsModalProps> = ({
         </div>
 
         <div className="flex flex-col gap-3">
-          {outletsData && outletsData.length > 0 && (
-            <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
-              <div className="font-medium mb-1">
-                This will save {tiers.length} price tier(s) to{" "}
-                {outletsData.length} outlet(s):
-              </div>
-              <div className="text-xs space-y-1">
-                {outletsData.map(outletData => (
-                  <div
-                    key={outletData.outlet.id}
-                    className="flex items-center gap-2"
-                  >
-                    <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                    <span>
-                      {outletData.outlet.name} ({outletData.outlet.address},{" "}
-                      {outletData.outlet.country})
-                      {outletData.outlet.isMainLocation && (
-                        <span className="ml-1 text-blue-600 font-medium">
-                          (Main)
-                        </span>
-                      )}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          
 
           <button
             onClick={handleSaveAll}
