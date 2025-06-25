@@ -6,30 +6,53 @@ interface DropdownOption {
   label: string;
 }
 
-interface DropdownProps {
+interface SingleSelectProps {
+  mode?: "select";
   options: DropdownOption[];
   selectedValue?: string;
-  placeholder?: string;
-  label?: string;
   onChange: (value: string) => void;
-  className?: string;
+  selectedValues?: never;
+  onMultiChange?: never;
 }
 
+interface MultiSelectProps {
+  mode: "checkbox";
+  options: DropdownOption[];
+  selectedValues: Record<string, boolean>;
+  onMultiChange: (values: Record<string, boolean>) => void;
+  selectedValue?: never;
+  onChange?: never;
+}
+
+type DropdownProps = (SingleSelectProps | MultiSelectProps) & {
+  placeholder?: string;
+  label?: string;
+  className?: string;
+};
+
 export const Dropdown: React.FC<DropdownProps> = ({
+  mode = "select",
   options,
-  selectedValue,
   placeholder = "Select an option",
   label,
-  onChange,
   className = "",
+  ...props
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const selectedOption = options.find(
-    (option) => option.value === selectedValue
-  );
+  // Handle single select props
+  const selectedValue = mode === "select" ? props.selectedValue : undefined;
+  const onChange = mode === "select" ? props.onChange : undefined;
+  
+  // Handle multi select props
+  const selectedValues = mode === "checkbox" ? props.selectedValues : undefined;
+  const onMultiChange = mode === "checkbox" ? props.onMultiChange : undefined;
+
+  const selectedOption = mode === "select" 
+    ? options.find(option => option.value === selectedValue)
+    : undefined;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -38,7 +61,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
         !dropdownRef.current.contains(event.target as Node)
       ) {
         setIsOpen(false);
-        setSearchTerm(""); // Clear search on close
+        setSearchTerm("");
       }
     };
 
@@ -46,10 +69,41 @@ export const Dropdown: React.FC<DropdownProps> = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSelect = (value: string) => {
-    onChange(value);
-    setIsOpen(false);
-    setSearchTerm(""); // Clear search on select
+  const handleSingleSelect = (value: string) => {
+    if (mode === "select" && onChange) {
+      onChange(value);
+      setIsOpen(false);
+      setSearchTerm("");
+    }
+  };
+
+  const handleMultiSelect = (value: string) => {
+    if (mode === "checkbox" && selectedValues && onMultiChange) {
+      const newValues = {
+        ...selectedValues,
+        [value]: !selectedValues[value]
+      };
+      onMultiChange(newValues);
+    }
+  };
+
+  const getDisplayText = () => {
+    if (mode === "select") {
+      return selectedOption ? selectedOption.label : placeholder;
+    } else {
+      const selectedCount = selectedValues 
+        ? Object.values(selectedValues).filter(Boolean).length 
+        : 0;
+      if (selectedCount === 0) return placeholder;
+      if (selectedCount === 1) {
+        const selectedKey = Object.keys(selectedValues || {}).find(
+          key => selectedValues?.[key]
+        );
+        const selectedOpt = options.find(opt => opt.value === selectedKey);
+        return selectedOpt?.label || placeholder;
+      }
+      return `${selectedCount} items selected`;
+    }
   };
 
   const filteredOptions = options.filter((option) =>
@@ -61,10 +115,10 @@ export const Dropdown: React.FC<DropdownProps> = ({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="relative w-full  border-2 border-[#E6E6E6]  rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-pointer   sm:text-sm transition-colors"
+        className="relative w-full border-2 border-[#E6E6E6] rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-pointer sm:text-sm transition-colors"
       >
         <span className="block truncate text-gray-900">
-          {selectedOption ? selectedOption.label : placeholder}
+          {getDisplayText()}
         </span>
         <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
           <ChevronDown
@@ -76,13 +130,16 @@ export const Dropdown: React.FC<DropdownProps> = ({
       </button>
 
       {isOpen && (
-        <div className="absolute border border-[#E6E6E6] z-10 mt-1 w-full bg-[#FAFAFC] shadow-lg  rounded-md py-1 text-base    focus:outline-none sm:text-sm">
+        <div className="absolute border border-[#E6E6E6] z-10 mt-1 w-full bg-[#FAFAFC] shadow-lg rounded-md py-1 text-base focus:outline-none sm:text-sm">
+          {label && (
             <p className="px-3 py-2.5 text-[#1C1B20] font-medium">{label}</p>
-          <div className="relative px-3 py-2 ">
+          )}
+          
+          <div className="relative px-3 py-2">
             <Search className="absolute left-4 top-4 h-4 w-4 text-gray-400 pointer-events-none" />
             <input
               type="text"
-              className="pl-9 pr-2 py-1.5 w-full rounded  text-sm bg-white outline-none border border-[#E6E6E6]"
+              className="pl-9 pr-2 py-1.5 w-full rounded text-sm bg-white outline-none border border-[#E6E6E6]"
               placeholder="Search..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -92,28 +149,55 @@ export const Dropdown: React.FC<DropdownProps> = ({
           {filteredOptions.length === 0 ? (
             <div className="px-3 py-2 text-sm text-gray-500">No options found</div>
           ) : (
-            filteredOptions.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => handleSelect(option.value)}
-                className={`w-full text-left relative cursor-pointer select-none py-2 pl-3 pr-9 hover:bg-gray-50 focus:outline-none focus:bg-gray-50 transition-colors ${
-                  selectedValue === option.value
-                    ? "text-[#15BA5C] "
-                    : "text-gray-900"
-                }`}
-              >
-                <span className="block truncate">{option.label}</span>
-                {selectedValue === option.value && (
-                  <span className="absolute inset-y-0 right-0 flex items-center pr-3">
-                    <Check className="h-4 w-4 " />
-                  </span>
-                )}
-              </button>
-            ))
+            filteredOptions.map((option) => {
+              const isSelected = mode === "select" 
+                ? selectedValue === option.value
+                : selectedValues?.[option.value] || false;
+
+              return (
+                <div
+                  key={option.value}
+                  onClick={() => {
+                    if (mode === "select") {
+                      handleSingleSelect(option.value);
+                    } else {
+                      handleMultiSelect(option.value);
+                    }
+                  }}
+                  className={`w-full text-left relative cursor-pointer select-none py-2 pl-3 pr-9 hover:bg-gray-50 focus:outline-none focus:bg-gray-50 transition-colors flex items-center ${
+                    isSelected && mode === "select"
+                      ? "text-[#15BA5C]"
+                      : "text-gray-900"
+                  }`}
+                >
+                  {mode === "checkbox" && (
+                    <div className="mr-3">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        readOnly
+                        className="w-4 h-4 text-[#15BA5C] border-2 border-[#E6E6E6] rounded focus:ring-[#15BA5C] focus:ring-2"
+                        style={{
+                          accentColor: isSelected ? '#15BA5C' : undefined
+                        }}
+                      />
+                    </div>
+                  )}
+                  
+                  <span className="block truncate flex-1">{option.label}</span>
+                  
+                  {mode === "select" && isSelected && (
+                    <span className="absolute inset-y-0 right-0 flex items-center pr-3">
+                      <Check className="h-4 w-4" />
+                    </span>
+                  )}
+                </div>
+              );
+            })
           )}
         </div>
       )}
     </div>
   );
 };
+

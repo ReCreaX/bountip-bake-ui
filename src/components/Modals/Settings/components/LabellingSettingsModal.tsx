@@ -5,23 +5,25 @@ import { Button } from "../ui/Button";
 import { Switch } from "../ui/Switch";
 import SettingFiles from "@/assets/icons/settings";
 import FileUploadComponent from "@/components/Upload/FileUploadComponent";
-import Select from "../ui/Select";
+import { Dropdown } from "../ui/Dropdown";
 
 interface LabellingSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const fontSizeOptions = [
-  { value: "small", label: "Small Text Size" },
-  { value: "medium", label: "Medium Text Size" },
-  { value: "large", label: "Large Text Size" },
+const fontOptions = [
+  { value: "productSans", label: "Product Sans" },
+  { value: "outfit", label: "Outfit" },
+  { value: "urbanist", label: "Urbanist" },
+  { value: "montserrat", label: "Montserrat" },
 ];
 
 const paperSizeOptions = [
-  { value: "tape", label: "Tape Size" },
-  { value: "a4", label: "A4 Size" },
-  { value: "letter", label: "Letter Size" },
+  { value: "a4", label: "A4" },
+  { value: "a2", label: "A2" },
+  { value: "a3", label: "A3" },
+  { value: "a1", label: "A1" },
 ];
 
 export const LabellingSettingsModal: React.FC<LabellingSettingsModalProps> = ({
@@ -56,7 +58,7 @@ export const LabellingSettingsModal: React.FC<LabellingSettingsModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(imageUrl)
+    console.log(imageUrl);
     onClose();
   };
 
@@ -102,47 +104,46 @@ export const LabellingSettingsModal: React.FC<LabellingSettingsModalProps> = ({
 
                 <div className="">
                   <div className="flex justify-between items-center mb-4">
-                    <label className="block text-sm font-medium text-[#737373] whitespace-nowrap">
+                    <label className="flex-1/2 block text-sm font-medium text-[#737373] whitespace-nowrap">
                       Font Style
                     </label>
-                    <div className="flex-1 ml-4 flex">
-                      <div className="flex-1 ml-4"></div>
-                      <div className="flex-1 ml-4">
-                        <Select
-                          options={fontSizeOptions}
-                          value={formData.fontSize}
-                          onChange={(val) =>
-                            setFormData((prev) => ({ ...prev, fontSize: val }))
-                          }
-                          placeholder="Select font size"
-                          className="w-full"
-                        />
-                      </div>
+
+                    <div className="w-full ml-4">
+                      <Dropdown
+                        className="bg-[#FAFAFC] "
+                        label="Fonts"
+                        options={fontOptions}
+                        selectedValue={formData.fontSize}
+                        placeholder="Select a font"
+                        onChange={(value) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            fontSize: value,
+                          }))
+                        }
+                      />
                     </div>
                   </div>
 
-                  <div className="flex justify-between items-center">
-                    <label className="block text-sm font-medium text-[#737373] whitespace-nowrap">
-                      Paper Size
+                  <div className="flex justify-between items-center mb-4">
+                    <label className="flex-1/2 block text-sm font-medium text-[#737373] whitespace-nowrap">
+                      Paper Size{" "}
                     </label>
-                    <div className="flex-1 ml-4">
-                      <div className="flex-1 ml-4 flex">
-                        <div className="flex-1 ml-4"></div>
-                        <div className="flex-1">
-                          <Select
-                            options={paperSizeOptions}
-                            value={formData.paperSize}
-                            onChange={(val) =>
-                              setFormData((prev) => ({
-                                ...prev,
-                                paperSize: val,
-                              }))
-                            }
-                            placeholder="Select paper size"
-                            className="w-full"
-                          />
-                        </div>
-                      </div>
+
+                    <div className="w-full ml-4">
+                      <Dropdown
+                        className="bg-[#FAFAFC] "
+                        label="Paper size"
+                        options={paperSizeOptions}
+                        selectedValue={formData.paperSize}
+                        placeholder="Select Paper size"
+                        onChange={(value) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            fontSize: value,
+                          }))
+                        }
+                      />
                     </div>
                   </div>
                 </div>

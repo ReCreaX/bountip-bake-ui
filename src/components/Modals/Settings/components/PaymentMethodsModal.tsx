@@ -45,6 +45,7 @@ export const PaymentMethodsModal: React.FC<PaymentMethodsModalProps> = ({
 
   return (
     <Modal
+      size={"lg"}
       image={SettingFiles.PaymentMethods}
       isOpen={isOpen}
       onClose={onClose}
@@ -52,35 +53,27 @@ export const PaymentMethodsModal: React.FC<PaymentMethodsModalProps> = ({
       subtitle="Manage your payment methods"
     >
       <div className="space-y-4">
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-          <h3 className="font-medium text-green-800 mb-2">
-            Activate Payment Methods for your Business
-          </h3>
-          <p className="text-sm text-green-700">
-            Choose which payment methods you want to accept
-          </p>
-        </div>
+        <PaymentBanner heading="Activate Payment Methods for your Business" />
 
-        {methods.map((method) => (
-          <div
-            key={method.id}
-            className="flex items-center justify-between p-4 border rounded-lg"
-          >
-            <div className="flex items-center gap-3">
-              {getIcon(method.type)}
-              <span className="font-medium">{method.name}</span>
+        <div className="flex flex-col gap-6">
+          {methods.map((method) => (
+            <div
+              key={method.id}
+              className="flex items-center justify-between p-4 border border-[#D1D1D1] rounded-lg"
+            >
+              <div className="flex items-center gap-3">
+                {getIcon(method.type)}
+                <span className="font-medium">{method.name}</span>
+              </div>
+              <Switch
+                checked={method.enabled}
+                onChange={(enabled) => handleToggle(method.id, enabled)}
+              />
             </div>
-            <Switch
-              checked={method.enabled}
-              onChange={(enabled) => handleToggle(method.id, enabled)}
-            />
-          </div>
-        ))}
-
-        <div className="mt-6 p-4 border-2 border-dashed border-gray-300 rounded-lg text-center">
-          <p className="text-gray-600 mb-2">Add custom payment method</p>
-          <Button variant="secondary">+ Add a Payment Method</Button>
+          ))}
         </div>
+
+        
 
         <div className="flex justify-end mt-6">
           <Button onClick={handleSave} className="w-full">
@@ -89,5 +82,41 @@ export const PaymentMethodsModal: React.FC<PaymentMethodsModalProps> = ({
         </div>
       </div>
     </Modal>
+  );
+};
+
+interface PaymentBannerProps {
+  className?: string;
+  heading: string;
+}
+
+const PaymentBanner: React.FC<PaymentBannerProps> = ({
+  className = "",
+  heading,
+}) => {
+  return (
+    <div
+      className={`relative bg-[#15BA5C] rounded-lg px-6 py-6 overflow-hidden ${className}`}
+    >
+      {/* Main text */}
+      <h2 className="text-white text-lg font-medium relative z-10">
+        {heading}
+      </h2>
+
+      {/* Decorative circles */}
+      <div className="absolute right-0 bottom-1/2 transform -translate-y-1/2 pointer-events-none">
+        {/* Large outer circle - transparent with border */}
+        <div className="absolute w-40 h-40 border-2 border-white/30 rounded-full -top-24 -right-20"></div>
+
+        {/* Medium circle - transparent with border */}
+        <div className="absolute w-24 h-24 border-2 border-white/40 rounded-full -top-12 -right-10"></div>
+
+        {/* Small filled circle - white */}
+        <div className="absolute w-5 h-5 bg-white rounded-full -top-3 right-10"></div>
+
+        {/* Small black circle - dark green/black (unchanged) */}
+        <div className="absolute w-8 h-8 bg-green-900 rounded-full top-2 right-2"></div>
+      </div>
+    </div>
   );
 };

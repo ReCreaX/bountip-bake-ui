@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { Modal } from "../ui/Modal";
 import { Button } from "../ui/Button";
-import { Input } from "../ui/Input";
 import { Switch } from "../ui/Switch";
 import SettingFiles from "@/assets/icons/settings";
 import FileUploadComponent from "@/components/Upload/FileUploadComponent";
+import { Dropdown } from "../ui/Dropdown";
 
 interface ReceiptCustomizationModalProps {
   isOpen: boolean;
@@ -33,7 +33,7 @@ export const ReceiptCustomizationModal: React.FC<
     showCompanyBankDetails: false,
     showCompanyBarCode: false,
     showModifiersBelowItems: false,
-    selectedColums: {
+    selectedColumns: {
       orderName: false,
       sku: false,
       qty: false,
@@ -46,9 +46,31 @@ export const ReceiptCustomizationModal: React.FC<
     customMessage: "",
   });
   const [imageUrl, setImageUrl] = useState("");
+  const fontOptions = [
+    { value: "productSans", label: "Product Sans" },
+    { value: "outfit", label: "Outfit" },
+    { value: "urbanist", label: "Urbanist" },
+    { value: "montserrat", label: "Montserrat" },
+  ];
+
+  const paperSizeOptions = [
+    { value: "a4", label: "A4" },
+    { value: "a2", label: "A2" },
+    { value: "a3", label: "A3" },
+    { value: "a1", label: "A1" },
+  ];
+
+  const columnOptions = [
+    { value: "orderName", label: "Order Name" },
+    { value: "sku", label: "SKU" },
+    { value: "qty", label: "Quantity" },
+    { value: "subTotal", label: "Subtotal" },
+    { value: "total", label: "Total" },
+  ];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log(imageUrl)
     onClose();
   };
 
@@ -116,6 +138,270 @@ export const ReceiptCustomizationModal: React.FC<
                       }))
                     }
                   />
+                </div>
+                <div className="">
+                  <div className="flex justify-between items-center mb-4">
+                    <label className="flex-1/2 block text-sm font-medium text-[#737373] whitespace-nowrap">
+                      Font Style
+                    </label>
+
+                    <div className="w-full ml-4">
+                      <Dropdown
+                        className="bg-[#FAFAFC] "
+                        label="Fonts"
+                        options={fontOptions}
+                        selectedValue={formData.fontStyle}
+                        placeholder="Select a font"
+                        onChange={(value) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            fontStyle: value,
+                          }))
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-center mb-4">
+                    <label className="flex-1/2 block text-sm font-medium text-[#737373] whitespace-nowrap">
+                      Paper Size{" "}
+                    </label>
+
+                    <div className="w-full ml-4">
+                      <Dropdown
+                        className="bg-[#FAFAFC] "
+                        label="Paper size"
+                        options={paperSizeOptions}
+                        selectedValue={formData.paperSize}
+                        placeholder="Select Paper size"
+                        onChange={(value) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            fontSize: value,
+                          }))
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="border border-dashed border-[#D1D1D1] rounded-[10px] px-3.5 py-2.5">
+              <h4 className="font-medium mb-4 text-[#1C1B20]">Header</h4>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-[#737373]">
+                    Show payment Success text
+                  </label>
+                  <Switch
+                    checked={formData.showPaymentSucessText}
+                    onChange={(checked) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        showPaymentSucessText: checked,
+                      }))
+                    }
+                  />
+                </div>
+
+                <div className="flex flex-col mt-1.5 gap-1.5">
+                  <label className="text-[#737373] text-sm font-medium">
+                    Customize Success text
+                  </label>
+                  <input
+                    type="text"
+                    name=""
+                    className="outline-none text-[12px]  border-2 border-[#D1D1D1] w-full px-3.5 py-2.5 bg-[#FAFAFC] rounded-[10px]"
+                    id=""
+                    placeholder="Enter Success text, e.g Payment successful!"
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        customizeSuccessText: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-[#737373]">
+                    Show total paid at top
+                  </label>
+                  <Switch
+                    checked={formData.showTotalPaidAtTop}
+                    onChange={(checked) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        showTotalPaidAtTop: checked,
+                      }))
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="border border-dashed border-[#D1D1D1] rounded-[10px] px-3.5 py-2.5">
+              <h4 className="font-medium mb-4">Order Information</h4>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-[#737373]">
+                    Customization Name
+                  </span>
+                  <Switch
+                    checked={formData.showOrderCustomizationName}
+                    onChange={(checked) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        showOrderCustomizationName: checked,
+                      }))
+                    }
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-[#737373]">Order Name</span>
+                  <Switch
+                    checked={formData.showOrderName}
+                    onChange={(checked) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        showOrderName: checked,
+                      }))
+                    }
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-[#737373]">Date & Time</span>
+                  <Switch
+                    checked={formData.showOrderDateTime}
+                    onChange={(checked) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        showOrderDateTime: checked,
+                      }))
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="border border-dashed border-[#D1D1D1] rounded-[10px] px-3.5 py-2.5">
+              <h4 className="font-medium mb-4">Company Information</h4>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-[#737373]">Cashier Name</span>
+                  <Switch
+                    checked={formData.showCashierName}
+                    onChange={(checked) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        showCashierName: checked,
+                      }))
+                    }
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-[#737373]">Phone Number</span>
+                  <Switch
+                    checked={formData.showCompanyPhoneNo}
+                    onChange={(checked) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        showCompanyPhoneNo: checked,
+                      }))
+                    }
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-[#737373]">Email</span>
+                  <Switch
+                    checked={formData.showCompanyEmail}
+                    onChange={(checked) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        showCompanyEmail: checked,
+                      }))
+                    }
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-[#737373]">Bank Details</span>
+                  <Switch
+                    checked={formData.showCompanyBankDetails}
+                    onChange={(checked) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        showCompanyBankDetails: checked,
+                      }))
+                    }
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-[#737373]">Barcode</span>
+                  <Switch
+                    checked={formData.showCompanyBarCode}
+                    onChange={(checked) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        showCompanyBarCode: checked,
+                      }))
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="border border-dashed border-[#D1D1D1] rounded-[10px] px-3.5 py-2.5">
+              <h4 className="font-medium mb-4 text-[#1C1B20]">
+                Itemized Details/List
+              </h4>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-[#737373]">
+                    Show Modifiers Below Items
+                  </label>
+                  <Switch
+                    checked={formData.showModifiersBelowItems}
+                    onChange={(checked) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        showModifiersBelowItems: checked,
+                      }))
+                    }
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <label className="flex-1/2 text-sm font-medium text-[#737373]">
+                    Display Columns
+                  </label>
+                  <div className="flex-1/2 ml-4">
+                    <Dropdown
+                      mode="checkbox"
+                      label="Select columns to display"
+                      options={columnOptions}
+                      selectedValues={formData.selectedColumns}
+                      onMultiChange={(values) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          selectedColumns: {
+                            orderName: values.orderName || false,
+                            sku: values.sku || false,
+                            qty: values.qty || false,
+                            subTotal: values.subTotal || false,
+                            total: values.total || false,
+                          },
+                        }))
+                      }
+                      placeholder="Select columns to display"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
