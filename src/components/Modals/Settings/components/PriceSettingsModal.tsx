@@ -284,6 +284,7 @@ interface OutletData {
     // ... other outlet properties
   };
   accessType: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   permissions?: any;
 }
 
@@ -370,6 +371,7 @@ export const PriceSettingsModal: React.FC<PriceSettingsModalProps> = ({
     setIsSaving(true);
 
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const savePromises: Promise<any>[] = [];
       let successCount = 0;
       let errorCount = 0;
@@ -384,6 +386,7 @@ export const PriceSettingsModal: React.FC<PriceSettingsModalProps> = ({
 
             savePromises.push(promise);
           } catch (error) {
+            console.log(error)
             errorCount++;
             errors.push(
               `Failed to save "${tier.name}" to ${outletData.outlet.name}`
