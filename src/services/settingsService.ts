@@ -133,7 +133,8 @@ class SettingsService {
     );
   }
 
-  async updateLabelSettings(formData, outletId: string | number, imageUrl:string) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async updateLabelSettings(formData:any, outletId: string | number, imageUrl:string) {
     const payload = {
       customizedLogoUrl: imageUrl, // Set this if you have it
       paperSize: formData.paperSize === "tape" ? "80mm" : "A4",

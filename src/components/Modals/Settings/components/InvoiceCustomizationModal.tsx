@@ -76,9 +76,11 @@ export const InvoiceCustomizationModal: React.FC<
     customMessage: "",
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { selectedOutletId, loading } = useBusinessStore();
   const selectedOutlet = useSelectedOutlet();
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -99,31 +101,31 @@ export const InvoiceCustomizationModal: React.FC<
         showPaymentSuccess: settings.showPaymentMethod,
         showBusinessLine: false,
         customBusinessText: "",
-        showInvoiceNumber:settings,
-        showInvoiceIssueDate: false,
-        showInvoiceDueDate: false,
-        showClientName: false,
-        showClientAddress: false,
-        showModifierBelowItems: false,
+        showInvoiceNumber:settings.showInvoiceNumber,
+        showInvoiceIssueDate: settings.showInvoiceIssueDate,
+        showInvoiceDueDate: settings.showInvoiceDueDate,
+        showClientName: settings.showInvoiceClientName,
+        showClientAddress: settings.showInvoiceClientName,
+        showModifierBelowItems: settings.showModifierBelowItems,
         selectedColumns: {
-          orderName: false,
-          sku: false,
-          qty: false,
-          subTotal: false,
-          total: false,
+          orderName: settings.selectedColumns.orderName,
+          sku: settings.selectedColumns.sku,
+          qty: settings.selectedColumns.qty,
+          subTotal: settings.selectedColumns.subTotal,
+          total: settings.selectedColumns.subTotal,
         },
-        showDiscountLine: false,
-        showTax: false,
-        showDeliveryFee: false,
-        showPaymentStatus: false,
-        showPaymentMethod: false,
-        showRemoveTaxOnOrderReceipt: false,
-        showRemoveTaxOnPaymentReceipt: false,
-        showActivateAccountDetails: false,
-        showActivateEmail: false,
-        showActivateAddress: false,
+        showDiscountLine: settings.showDiscountLine,
+        showTax: settings.showTax,
+        showDeliveryFee: settings.showShippingFee,
+        showPaymentStatus: settings.showPaymentStatus,
+        showPaymentMethod: settings.showPaymentMethod,
+        showRemoveTaxOnOrderReceipt: settings.showTaxOnOrderReceipt,
+        showRemoveTaxOnPaymentReceipt: settings.showTaxOnPaymentReceipt,
+        showActivateAccountDetails: settings.showAccountDetails,
+        showActivateEmail: settings.showEmail,
+        showActivateAddress: settings.showAddress,
 
-        customMessage: settings.customFooter,
+        customMessage: settings.customThankYouMessage || "",
       });
 
       if (settings.customizedLogoUrl) {

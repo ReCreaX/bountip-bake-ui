@@ -7,8 +7,6 @@ import Image from "next/image";
 import { LogOut, Settings } from "lucide-react";
 import { DashboardSidebarNavigationData } from "@/data/SidebarNavigationData";
 import AssetsFiles from "@/assets";
-import { COOKIE_NAMES, getCookie } from "@/utils/cookiesUtils";
-import { UserType } from "@/types/userTypes";
 import { useModalStore } from "@/stores/useUIStore";
 import TooltipWrapper from "../ToolTip/TooltipWrapper";
 import { useSelectedOutlet } from "@/hooks/useSelectedOutlet";

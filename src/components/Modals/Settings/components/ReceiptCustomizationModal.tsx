@@ -9,6 +9,7 @@ import settingsService from "@/services/settingsService";
 import { useSelectedOutlet } from "@/hooks/useSelectedOutlet";
 import { useBusinessStore } from "@/stores/useBusinessStore";
 import { ApiResponseType } from "@/types/httpTypes";
+import { toast } from "sonner";
 
 const fontOptions = [
   { value: "productSans", label: "Product Sans" },
@@ -84,23 +85,37 @@ export const ReceiptCustomizationModal: React.FC<
   useEffect(() => {
     if (isOpen && selectedOutlet?.outlet.receiptSettings) {
       const settings = selectedOutlet.outlet.receiptSettings;
-      if(settings.customizedLogoUrl){
-        setImageUrl(settings.customizedLogoUrl)
+      if (settings.customizedLogoUrl) {
+        setImageUrl(settings.customizedLogoUrl);
       }
 
       setFormData({
-        
         showRestaurantName: settings.showBakeryName,
         showPaymentSucessText: settings.showPaymentSuccessText,
         fontStyle: settings.fontStyle,
         paperSize: settings.paperSize,
         showOrderName: settings.showOrderName,
-        showDiscountLine:settings.showDiscounts,
-        showTax:settings.showTaxDetails,
-        customizeSuccessText:settings.customSuccessText,
-        
-        customMessage:settings.customThankYouMessage
-        
+        showDiscountLine: settings.showDiscounts,
+        showTax: settings.showTaxDetails,
+        customizeSuccessText: settings.customSuccessText,
+        selectedColumns: {
+          orderName: settings.selectedColumns.orderName,
+          qty: settings.selectedColumns.qty,
+          sku: settings.selectedColumns.sku,
+          subTotal: settings.selectedColumns.subTotal,
+          total: settings.selectedColumns.total,
+        },
+        showCashierName: settings.showCompanyCashierName,
+        showCompanyPhoneNo: settings.showCompanyPhoneNumber,
+        showCompanyEmail: settings.showCompanyEmail,
+        showCompanyBankDetails: settings.showCompanyBankDetails,
+        showCompanyBarCode: settings.showCompanyBarcode,
+        showModifiersBelowItems: settings.showModifiedBelowItems,
+        showTotalPaidAtTop: settings.showTotalPaidAtTop,
+        showOrderCustomizationName: settings.showOrderName,
+        showOrderDateTime: settings.showOrderTime,
+        showPaymentMethod: settings.showPaymentMethod,
+        customMessage: settings.customThankYouMessage,
       });
 
       if (settings.customizedLogoUrl) {
@@ -122,6 +137,9 @@ export const ReceiptCustomizationModal: React.FC<
         selectedOutletId as number,
         imageUrl
       )) as ApiResponseType;
+      if (result.status) {
+        toast.success("Successfully updated receipt settings");
+      }
     } catch (error) {
       console.log(error);
     }

@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { PriceSettingsModal } from "@/components/Modals/Settings/components/PriceSettingsModal";
 import { PaymentMethodsModal } from "@/components/Modals/Settings/components/PaymentMethodsModal";
 import { BusinessDetailsModal } from "@/components/Modals/Settings/components/BusinessDetailsModal";
-import { PaymentMethod, PriceTier } from "@/types/settingTypes";
+import { PaymentMethod } from "@/types/settingTypes";
 import Image from "next/image";
 import { ChevronRight } from "lucide-react";
 import { LabellingSettingsModal } from "@/components/Modals/Settings/components/LabellingSettingsModal";
@@ -70,8 +70,7 @@ const SettingsPage: React.FC = () => {
     { id: "3", name: "Others", type: "others", enabled: true },
   ]);
 
-  const [priceTiers, setPriceTiers] = useState<PriceTier[]>([
-  ]);
+ 
 
   const handleSettingClick = (id: string) => {
     setActiveModal(id);

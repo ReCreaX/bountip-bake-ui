@@ -5,11 +5,9 @@ import Image from "next/image";
 import { Input } from "../ui/Input";
 import settingsService from "@/services/settingsService";
 import { useBusinessStore } from "@/stores/useBusinessStore";
-import { Outlet, OutletAccess } from "@/types/outlet";
 import { ApiResponseType } from "@/types/httpTypes";
 import { toast } from "sonner";
 
-// Updated PriceTier interface to match your API response
 interface PriceTier {
   id: number;
   name: string;
@@ -24,8 +22,6 @@ interface PriceTier {
   isEditing?: boolean;
   isNew?: boolean; // Flag to track newly added tiers
 }
-
-
 
 interface PriceSettingsModalProps {
   isOpen: boolean;
@@ -46,7 +42,9 @@ export const PriceSettingsModal: React.FC<PriceSettingsModalProps> = ({
       const outlet = outlets.find((val) => val.outlet.id === selectedOutletId);
       if (outlet && Array.isArray(outlet.outlet.priceTier)) {
         console.log(outlet.outlet.priceTier, "Loaded tiers");
-        setTiers(outlet.outlet.priceTier.map(tier => ({ ...tier, isEditing: false })));
+        setTiers(
+          outlet.outlet.priceTier.map((tier) => ({ ...tier, isEditing: false }))
+        );
       } else {
         setTiers([]);
       }
@@ -55,7 +53,7 @@ export const PriceSettingsModal: React.FC<PriceSettingsModalProps> = ({
 
   if (!selectedOutletId) return null;
 
-  const addTier = (tier: Omit<PriceTier, 'id' | 'isActive'>) => {
+  const addTier = (tier: Omit<PriceTier, "id" | "isActive">) => {
     const newTier: PriceTier = {
       ...tier,
       id: Date.now(), // Temporary ID for new tiers
@@ -66,8 +64,8 @@ export const PriceSettingsModal: React.FC<PriceSettingsModalProps> = ({
   };
 
   const deleteTier = async (id: number) => {
-    const tierToDelete = tiers.find(t => t.id === id);
-    
+    const tierToDelete = tiers.find((t) => t.id === id);
+
     // If it's a new tier (not saved to backend), just remove from state
     if (tierToDelete?.isNew) {
       setTiers((prev) => prev.filter((t) => t.id !== id));
@@ -79,7 +77,7 @@ export const PriceSettingsModal: React.FC<PriceSettingsModalProps> = ({
       outletId: selectedOutletId,
       priceTierId: id,
     })) as ApiResponseType;
-    
+
     if (result.status) {
       setTiers((prev) => prev.filter((t) => t.id !== id));
       toast.success("Price tier deleted successfully");
@@ -100,9 +98,9 @@ export const PriceSettingsModal: React.FC<PriceSettingsModalProps> = ({
     setTiers((prev) =>
       prev.map((tier) => (tier.id === id ? { ...tier, ...updatedTier } : tier))
     );
-    
+
     // If it's not a new tier, save to backend immediately
-    const tier = tiers.find(t => t.id === id);
+    const tier = tiers.find((t) => t.id === id);
     if (tier && !tier.isNew) {
       saveTierToBackend({ ...tier, ...updatedTier });
     }
@@ -112,21 +110,20 @@ export const PriceSettingsModal: React.FC<PriceSettingsModalProps> = ({
     try {
       if (tier.isNew) {
         // Create new tier
-        const result = await settingsService.addPriceTier({
+        const result = (await settingsService.addPriceTier({
           outletId: selectedOutletId,
           name: tier.name,
           description: tier.description,
           pricingRules: tier.pricingRules,
           isActive: tier.isActive,
-        });
-        
+        })) as ApiResponseType;
+
         if (result.status) {
           // Update the tier in state to mark it as saved
-          setTiers(prev => prev.map(t => 
-            t.id === tier.id ? { ...t, isNew: false } : t
-          ));
+          setTiers((prev) =>
+            prev.map((t) => (t.id === tier.id ? { ...t, isNew: false } : t))
+          );
         }
-      
       }
     } catch (error) {
       console.error("Failed to save tier", error);
@@ -135,8 +132,8 @@ export const PriceSettingsModal: React.FC<PriceSettingsModalProps> = ({
   };
 
   const handleSaveAll = async () => {
-    const newTiers = tiers.filter(tier => tier.isNew);
-    
+    const newTiers = tiers.filter((tier) => tier.isNew);
+
     if (newTiers.length === 0) {
       toast.info("No new price tiers to save.");
       return;
@@ -162,7 +159,7 @@ export const PriceSettingsModal: React.FC<PriceSettingsModalProps> = ({
       } else {
         toast.success("All price tiers saved successfully.");
         // Mark all tiers as saved
-        setTiers(prev => prev.map(tier => ({ ...tier, isNew: false })));
+        setTiers((prev) => prev.map((tier) => ({ ...tier, isNew: false })));
       }
     } catch (error) {
       console.error("Failed to save tiers", error);
@@ -192,7 +189,7 @@ export const PriceSettingsModal: React.FC<PriceSettingsModalProps> = ({
         {tiers.length > 0 &&
           tiers.map((tier) => {
             const { markup, discount } = getDisplayValue(tier);
-            
+
             return (
               <div
                 key={tier.id}
@@ -264,7 +261,7 @@ export const PriceSettingsModal: React.FC<PriceSettingsModalProps> = ({
         </div>
 
         {/* Only show save button if there are new tiers */}
-        {tiers.some(tier => tier.isNew) && (
+        {tiers.some((tier) => tier.isNew) && (
           <div className="flex flex-col gap-3">
             <button
               onClick={handleSaveAll}
@@ -304,8 +301,12 @@ const EditableTierForm: React.FC<EditableTierFormProps> = ({
     discountPercent: tier.pricingRules.discountPercentage || 0,
   });
 
-  const [markupEnabled, setMarkupEnabled] = useState((tier.pricingRules.markupPercentage || 0) > 0);
-  const [discountEnabled, setDiscountEnabled] = useState((tier.pricingRules.discountPercentage || 0) > 0);
+  const [markupEnabled, setMarkupEnabled] = useState(
+    (tier.pricingRules.markupPercentage || 0) > 0
+  );
+  const [discountEnabled, setDiscountEnabled] = useState(
+    (tier.pricingRules.discountPercentage || 0) > 0
+  );
 
   const handleMarkupToggle = (enabled: boolean) => {
     setMarkupEnabled(enabled);
@@ -338,7 +339,9 @@ const EditableTierForm: React.FC<EditableTierFormProps> = ({
       description: editedTier.description.trim(),
       pricingRules: {
         markupPercentage: markupEnabled ? editedTier.markupPercent : undefined,
-        discountPercentage: discountEnabled ? editedTier.discountPercent : undefined,
+        discountPercentage: discountEnabled
+          ? editedTier.discountPercent
+          : undefined,
       },
     });
   };
@@ -460,7 +463,7 @@ const EditableTierForm: React.FC<EditableTierFormProps> = ({
 
 // Form component for adding new tiers
 interface PriceTierFormProps {
-  onAdd: (tier: Omit<PriceTier, 'id' | 'isActive'>) => void;
+  onAdd: (tier: Omit<PriceTier, "id" | "isActive">) => void;
 }
 
 export const PriceTierForm: React.FC<PriceTierFormProps> = ({ onAdd }) => {
@@ -586,7 +589,10 @@ export const PriceTierForm: React.FC<PriceTierFormProps> = ({ onAdd }) => {
             onChange={(e) => handleDiscountToggle(e.target.checked)}
             className="w-4 h-4 text-[#15BA5C] border-gray-300 rounded focus:ring-[#15BA5C]"
           />
-          <label htmlFor="new-discount-checkbox" className="text-sm font-medium">
+          <label
+            htmlFor="new-discount-checkbox"
+            className="text-sm font-medium"
+          >
             Discount %
           </label>
         </div>

@@ -37,7 +37,7 @@ const OnboardingClient = () => {
       }
     };
     checkIfUserRegistered();
-  }, []);
+  }, [userTokens]);
   return (
     <main className="flex min-h-screen">
       <section className="bg-[#FAFAFC] flex-1/3">
