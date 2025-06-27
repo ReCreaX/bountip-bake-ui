@@ -1,7 +1,15 @@
 import React, { useState, useRef } from "react";
-import { CloudUpload} from "lucide-react";
+import { CloudUpload } from "lucide-react";
+import { COOKIE_NAMES } from "@/utils/cookiesUtils";
+import uploadService from "@/services/uploadService";
 
-const FileUploadComponent = ({ setImageUrl }: { setImageUrl: (url: string) => void }) => {
+interface FileUploadComponentProps {
+  setImageUrl: (url: string) => void;
+}
+
+const FileUploadComponent: React.FC<FileUploadComponentProps> = ({
+  setImageUrl,
+}) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -16,14 +24,11 @@ const FileUploadComponent = ({ setImageUrl }: { setImageUrl: (url: string) => vo
     setIsDragOver(false);
   };
 
-  const handleDrop = (e: {
-    preventDefault: () => void;
-    dataTransfer: { files: Iterable<unknown> | ArrayLike<unknown> };
-  }) => {
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragOver(false);
 
-    const files = Array.from(e.dataTransfer.files) as File[];
+    const files = Array.from(e.dataTransfer.files);
     const imageFile = files.find((file) => file.type.startsWith("image/"));
 
     if (imageFile) {
@@ -38,22 +43,33 @@ const FileUploadComponent = ({ setImageUrl }: { setImageUrl: (url: string) => vo
     }
   };
 
-  const handleFileUpload = (file: Blob) => {
+  const handleFileUpload = async (file: File) => {
     setIsUploading(true);
-
-    // Create a FileReader to convert file to base64 URL
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      if (!e.target) return;
-      const imageUrl = e.target.result;
-      setImageUrl(imageUrl as string);
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const response:any = await uploadService.uploadImage(
+        file,
+        COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS
+      );
+      console.log(response)
+      if (response?.status && response?.data?.url) {
+        setImageUrl(response.data.url);
+        console.log("Image uploaded successfully:", response.data.url);
+      } else {
+        throw new Error("Invalid upload response: no URL returned");
+      }
+    } catch (error) {
+      console.error("Upload failed:", error);
+      setImageUrl(""); // Clear image URL on failure
+    } finally {
       setIsUploading(false);
-    };
-    reader.readAsDataURL(file);
+    }
   };
 
   const handleClick = () => {
-    fileInputRef.current?.click();
+    if (!isUploading) {
+      fileInputRef.current?.click();
+    }
   };
 
   return (
@@ -64,7 +80,7 @@ const FileUploadComponent = ({ setImageUrl }: { setImageUrl: (url: string) => vo
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         className={`
-          relative border border-dashed border-[#D1D1D1] rounded-lg p-8 text-center cursor-pointer
+          relative border border-dashed rounded-lg p-8 text-center cursor-pointer
           transition-all duration-200 ease-in-out
           ${
             isDragOver
@@ -85,7 +101,7 @@ const FileUploadComponent = ({ setImageUrl }: { setImageUrl: (url: string) => vo
 
         <div className="flex flex-col items-center space-y-2">
           <CloudUpload
-            className={`w-8 h-8 text-[#15BA5C] ${
+            className={`w-8 h-8 ${
               isDragOver ? "text-blue-500" : "text-gray-400"
             }`}
           />
@@ -111,4 +127,4 @@ const FileUploadComponent = ({ setImageUrl }: { setImageUrl: (url: string) => vo
   );
 };
 
-export default FileUploadComponent
+export default FileUploadComponent;

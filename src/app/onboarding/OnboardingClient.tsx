@@ -32,7 +32,7 @@ const OnboardingClient = () => {
       const isUserRegistered =
         userTokens && userTokens.accessToken && userTokens.refreshToken;
       if (!isUserRegistered) {
-        router.push("/auth?signup");
+        // router.push("/auth?signup");
         return null;
       }
     };

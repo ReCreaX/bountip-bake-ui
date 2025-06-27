@@ -31,6 +31,107 @@ interface DayHours {
   closeTime: string;
 }
 
+// Custom TimeInput component
+const TimeInput: React.FC<{
+  value: string;
+  onChange: (value: string) => void;
+  disabled?: boolean;
+  placeholder?: string;
+}> = ({ value, onChange, disabled = false, placeholder = "00:00" }) => {
+  const [inputValue, setInputValue] = useState(value);
+
+  useEffect(() => {
+    setInputValue(value);
+  }, [value]);
+
+  const formatTime = (input: string): string => {
+    // Remove all non-digit characters
+    const digits = input.replace(/\D/g, '');
+    
+    if (digits.length === 0) return '';
+    if (digits.length <= 2) return digits;
+    if (digits.length <= 4) {
+      const hours = digits.slice(0, 2);
+      const minutes = digits.slice(2);
+      return `${hours}:${minutes}`;
+    }
+    
+    // Limit to 4 digits max
+    const hours = digits.slice(0, 2);
+    const minutes = digits.slice(2, 4);
+    return `${hours}:${minutes}`;
+  };
+
+  const validateTime = (timeString: string): boolean => {
+    const timeRegex = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9])$/;
+    return timeRegex.test(timeString);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatTime(e.target.value);
+    setInputValue(formatted);
+  };
+
+  const handleBlur = () => {
+    if (inputValue === '') {
+      setInputValue('00:00');
+      onChange('00:00');
+      return;
+    }
+
+    // Pad incomplete times
+    if (inputValue.length === 1) {
+      const padded = `0${inputValue}:00`;
+      setInputValue(padded);
+      onChange(padded);
+    } else if (inputValue.length === 2) {
+      const padded = `${inputValue}:00`;
+      setInputValue(padded);
+      onChange(padded);
+    } else if (inputValue.length === 4 && inputValue.includes(':')) {
+      const [hours, minutes] = inputValue.split(':');
+      const padded = `${hours.padStart(2, '0')}:${minutes.padEnd(2, '0')}`;
+      setInputValue(padded);
+      onChange(padded);
+    } else if (validateTime(inputValue)) {
+      onChange(inputValue);
+    } else {
+      // Reset to previous valid value if invalid
+      setInputValue(value);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Allow: backspace, delete, tab, escape, enter, and arrow keys
+    if ([8, 9, 27, 13, 37, 38, 39, 40, 46].includes(e.keyCode) ||
+        // Allow Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+        (e.keyCode === 65 && e.ctrlKey) ||
+        (e.keyCode === 67 && e.ctrlKey) ||
+        (e.keyCode === 86 && e.ctrlKey) ||
+        (e.keyCode === 88 && e.ctrlKey)) {
+      return;
+    }
+    // Ensure that it's a number and stop the keypress
+    if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+      e.preventDefault();
+    }
+  };
+
+  return (
+    <input
+      type="text"
+      value={inputValue}
+      onChange={handleInputChange}
+      onBlur={handleBlur}
+      onKeyDown={handleKeyDown}
+      disabled={disabled}
+      placeholder={placeholder}
+      maxLength={5}
+      className="px-3 outline-none py-2 rounded-md text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 disabled:text-gray-400 text-center min-w-[80px]"
+    />
+  );
+};
+
 export const OperatingHoursModal: React.FC<OperatingHoursModalProps> = ({
   isOpen,
   onClose,
@@ -94,6 +195,7 @@ export const OperatingHoursModal: React.FC<OperatingHoursModalProps> = ({
       },
     ],
   });
+  
   useEffect(() => {
     if (!outletsData || outletsData.length === 0) return;
 
@@ -101,7 +203,7 @@ export const OperatingHoursModal: React.FC<OperatingHoursModalProps> = ({
       id: String(item.outlet.id),
       name: item.outlet.name || "Unnamed Outlet",
       address: item.outlet.address || "No address provided",
-      expanded: false,
+      expanded: true,
     }));
 
     setLocations(newLocations);
@@ -221,20 +323,6 @@ export const OperatingHoursModal: React.FC<OperatingHoursModalProps> = ({
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const failures = results.filter((r) => !r.success);
 
-    // if (successes > 0) {
-    //   toast.success(`${successes} outlet(s) updated successfully`, {
-    //     duration: 3000,
-    //   });
-    // }
-
-    // if (failures.length > 0) {
-    //   toast.error(`${failures.length} outlet(s) failed to update`, {
-    //     duration: 3000,
-    //     position: "top-right",
-    //     style: { backgroundColor: "#f87171", color: "#fff" },
-    //   });
-    // }
-
     onClose();
     toast.success(`${successes} outlet(s) updated successfully`, {
       duration: 3000,
@@ -243,6 +331,7 @@ export const OperatingHoursModal: React.FC<OperatingHoursModalProps> = ({
 
   return (
     <Modal
+      size={"lg"}
       image={SettingFiles.OperatingHours}
       isOpen={isOpen}
       onClose={onClose}
@@ -250,7 +339,7 @@ export const OperatingHoursModal: React.FC<OperatingHoursModalProps> = ({
       subtitle="Setup your Operating hours for all locations"
     >
       <>
-        <div className="space-y-4  overflow-y-auto">
+        <div className="space-y-4 overflow-y-auto">
           {locations.map((location) => (
             <div
               key={location.id}
@@ -278,7 +367,7 @@ export const OperatingHoursModal: React.FC<OperatingHoursModalProps> = ({
                   {operatingHours[location.id]?.map((dayHours, dayIndex) => (
                     <div
                       key={dayHours.day}
-                      className="flex items-center justify-between gap-4 relative"
+                      className="flex items-center justify-between gap-4 relative mt-2.5"
                     >
                       <div className="w-32">
                         <Switch
@@ -291,39 +380,37 @@ export const OperatingHoursModal: React.FC<OperatingHoursModalProps> = ({
                       </div>
 
                       <div className="flex items-center gap-2 flex-1 relative">
-                        <div className="flex items-center gap-2 border border-[#E6E6E6] px-2 rounded-xl">
+                        <div className="flex flex-1/2 items-center justify-between gap-2 border border-[#E6E6E6] px-2 rounded-xl">
                           <span className="text-sm text-gray-600">From</span>
-                          <input
-                            type="time"
+                          <TimeInput
                             value={dayHours.openTime}
-                            onChange={(e) =>
+                            onChange={(value) =>
                               handleTimeChange(
                                 location.id,
                                 dayIndex,
                                 "openTime",
-                                e.target.value
+                                value
                               )
                             }
                             disabled={!dayHours.enabled}
-                            className="px-3 py-2  rounded-md text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 disabled:text-gray-400"
+                            placeholder="09:00"
                           />
                         </div>
 
-                        <div className="flex items-center gap-2 border border-[#E6E6E6] px-2 rounded-xl">
+                        <div className="flex flex-1/2 items-center justify-between gap-2 border border-[#E6E6E6] px-2 rounded-xl">
                           <span className="text-sm text-gray-600">To</span>
-                          <input
-                            type="time"
+                          <TimeInput
                             value={dayHours.closeTime}
-                            onChange={(e) =>
+                            onChange={(value) =>
                               handleTimeChange(
                                 location.id,
                                 dayIndex,
                                 "closeTime",
-                                e.target.value
+                                value
                               )
                             }
                             disabled={!dayHours.enabled}
-                            className="px-3 py-2 rounded-md text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 disabled:text-gray-400"
+                            placeholder="17:00"
                           />
                         </div>
 

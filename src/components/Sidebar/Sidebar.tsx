@@ -11,6 +11,8 @@ import { COOKIE_NAMES, getCookie } from "@/utils/cookiesUtils";
 import { UserType } from "@/types/userTypes";
 import { useModalStore } from "@/stores/useUIStore";
 import TooltipWrapper from "../ToolTip/TooltipWrapper";
+import { useSelectedOutlet } from "@/hooks/useSelectedOutlet";
+import { getRole } from "@/utils/getRolesType";
 
 const DashboardSidebarLayout = () => {
   const { showFullDashboardSidebar } = useModalStore();
@@ -18,7 +20,9 @@ const DashboardSidebarLayout = () => {
   const activeId = pathname.split("/")[1] || "dashboard";
   const [settingsOpen, setSettingsOpen] = useState(false);
   // const user = getCookie<UserType>("bountipLoginUser");
-  const user = getCookie<UserType>(COOKIE_NAMES.BOUNTIP_LOGIN_USER);
+  // const user = getCookie<UserType>(COOKIE_NAMES.BOUNTIP_LOGIN_USER);
+  const outlets = useSelectedOutlet()
+  if(!outlets) return;
 
   const sidebarWidth = showFullDashboardSidebar ? "w-[300px]" : "w-20";
 
@@ -109,10 +113,10 @@ const DashboardSidebarLayout = () => {
         <div className="mt-4 px-3 flex flex-col gap-4 text-sm text-[#4B4B4B]">
           <div
             className="flex items-center gap-3"
-            title={user?.fullName || "User"}
+            title={outlets.outlet.name || "User"}
           >
             <Image
-              src={AssetsFiles.UserPerson}
+              src={ outlets.outlet.logoUrl|| AssetsFiles.UserPerson}
               className="h-[48px] w-[48px] rounded-full"
               alt="User"
               width={48}
@@ -120,8 +124,8 @@ const DashboardSidebarLayout = () => {
             />
             {showFullDashboardSidebar && (
               <div>
-                <p className="font-medium">{user?.fullName}</p>
-                <p className="text-xs text-gray-500">Admin Manager</p>
+                <p className="font-medium">{outlets.outlet.name}</p>
+                <p className="text-xs text-gray-500">{getRole(outlets.accessType)}</p>
               </div>
             )}
           </div>

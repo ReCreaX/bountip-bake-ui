@@ -1,5 +1,5 @@
 // InvoiceCustomizationModal.tsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Modal } from "../ui/Modal";
 import { Button } from "../ui/Button";
 
@@ -7,11 +7,36 @@ import SettingFiles from "@/assets/icons/settings";
 import FileUploadComponent from "@/components/Upload/FileUploadComponent";
 import { Switch } from "../ui/Switch";
 import { Dropdown } from "../ui/Dropdown";
+import Image from "next/image";
+import { useSelectedOutlet } from "@/hooks/useSelectedOutlet";
+import { useBusinessStore } from "@/stores/useBusinessStore";
 
 interface InvoiceCustomizationModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
+
+const fontOptions = [
+  { value: "productSans", label: "Product Sans" },
+  { value: "outfit", label: "Outfit" },
+  { value: "urbanist", label: "Urbanist" },
+  { value: "montserrat", label: "Montserrat" },
+];
+
+const paperSizeOptions = [
+  { value: "a4", label: "A4" },
+  { value: "a2", label: "A2" },
+  { value: "a3", label: "A3" },
+  { value: "a1", label: "A1" },
+];
+
+const columnOptions = [
+  { value: "orderName", label: "Order Name" },
+  { value: "sku", label: "SKU" },
+  { value: "qty", label: "Quantity" },
+  { value: "subTotal", label: "Subtotal" },
+  { value: "total", label: "Total" },
+];
 
 export const InvoiceCustomizationModal: React.FC<
   InvoiceCustomizationModalProps
@@ -51,27 +76,61 @@ export const InvoiceCustomizationModal: React.FC<
     customMessage: "",
   });
 
-  const fontOptions = [
-    { value: "productSans", label: "Product Sans" },
-    { value: "outfit", label: "Outfit" },
-    { value: "urbanist", label: "Urbanist" },
-    { value: "montserrat", label: "Montserrat" },
-  ];
+  const { selectedOutletId, loading } = useBusinessStore();
+  const selectedOutlet = useSelectedOutlet();
 
-  const paperSizeOptions = [
-    { value: "a4", label: "A4" },
-    { value: "a2", label: "A2" },
-    { value: "a3", label: "A3" },
-    { value: "a1", label: "A1" },
-  ];
+  const [isClient, setIsClient] = useState(false);
 
-  const columnOptions = [
-    { value: "orderName", label: "Order Name" },
-    { value: "sku", label: "SKU" },
-    { value: "qty", label: "Quantity" },
-    { value: "subTotal", label: "Subtotal" },
-    { value: "total", label: "Total" },
-  ];
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (isOpen && selectedOutlet?.outlet.invoiceSettings) {
+      const settings = selectedOutlet.outlet.invoiceSettings;
+      if (settings.customizedLogoUrl) {
+        setImageUrl(settings.customizedLogoUrl);
+      }
+
+      setFormData({
+        showBakeryName: settings.showBakeryName,
+        fontSize: settings.fontStyle,
+        paperSize: settings.paperSize,
+        showPaymentSuccess: settings.showPaymentMethod,
+        showBusinessLine: false,
+        customBusinessText: "",
+        showInvoiceNumber:settings,
+        showInvoiceIssueDate: false,
+        showInvoiceDueDate: false,
+        showClientName: false,
+        showClientAddress: false,
+        showModifierBelowItems: false,
+        selectedColumns: {
+          orderName: false,
+          sku: false,
+          qty: false,
+          subTotal: false,
+          total: false,
+        },
+        showDiscountLine: false,
+        showTax: false,
+        showDeliveryFee: false,
+        showPaymentStatus: false,
+        showPaymentMethod: false,
+        showRemoveTaxOnOrderReceipt: false,
+        showRemoveTaxOnPaymentReceipt: false,
+        showActivateAccountDetails: false,
+        showActivateEmail: false,
+        showActivateAddress: false,
+
+        customMessage: settings.customFooter,
+      });
+
+      if (settings.customizedLogoUrl) {
+        setImageUrl(settings.customizedLogoUrl);
+      }
+    }
+  }, [isOpen, selectedOutlet]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,7 +153,17 @@ export const InvoiceCustomizationModal: React.FC<
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="px-3.5 py-1.5">
               <h4 className="font-medium mb-4">Invoice Branding</h4>
-              <FileUploadComponent setImageUrl={setImageUrl} />
+              {imageUrl ? (
+                <Image
+                  height={140}
+                  width={140}
+                  alt="Logo"
+                  src={imageUrl}
+                  className="h-[140px] w-[140px] "
+                />
+              ) : (
+                <FileUploadComponent setImageUrl={setImageUrl} />
+              )}{" "}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <label className="text-sm font-medium text-[#737373]">
@@ -155,8 +224,6 @@ export const InvoiceCustomizationModal: React.FC<
                     </div>
                   </div>
                 </div>
-
-               
               </div>
             </div>
 

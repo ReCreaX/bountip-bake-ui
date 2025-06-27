@@ -1,349 +1,94 @@
-// import React, { useState } from "react";
-// import { Modal } from "../ui/Modal";
-// import SettingFiles from "@/assets/icons/settings";
-// import Image from "next/image";
-// import { Input } from "../ui/Input";
-// import { Switch } from "../ui/Switch";
-
-// interface PriceTier {
-//   id: string;
-//   name: string;
-//   description?: string;
-//   markupPercent: number;
-//   discountPercent: number;
-// }
-
-// interface PriceSettingsModalProps {
-//   isOpen: boolean;
-//   onClose: () => void;
-//   priceTiers: PriceTier[];
-//   outletsData:any[];
-//   onSave: (tiers: PriceTier[]) => void;
-// }
-
-// export const PriceSettingsModal: React.FC<PriceSettingsModalProps> = ({
-//   isOpen,
-//   onClose,
-//   priceTiers,
-//   onSave,
-//   outletsData
-// }) => {
-//   const [tiers, setTiers] = useState<PriceTier[]>(priceTiers);
-
-//   const addTier = (tier: PriceTier) => {
-//     setTiers((prev) => [...prev, tier]);
-//   };
-
-//   const deleteTier = (id: string) => {
-//     setTiers((prev) => prev.filter((t) => t.id !== id));
-//   };
-
-//   const handleSave = () => {
-//     onSave(tiers);
-//     onClose();
-//   };
-
-//   return (
-//     <Modal
-//       size="md"
-//       subtitle="Update and Manage Price Tiers"
-//       image={SettingFiles.PriceTier}
-//       isOpen={isOpen}
-//       onClose={onClose}
-//       title="Price Settings"
-//     >
-//       <div className="space-y-6">
-//         {console.log(outletsData, "THis is stuff")}
-//         {tiers.map((tier) => (
-//           <div key={tier.id} className="rounded-lg p-4 border border-gray-200">
-//             <div className="flex items-center justify-between mb-2">
-//               <span className="font-medium">{tier.name}</span>
-//               <div className="flex items-center gap-2">
-//                 <button
-//                   type="button"
-//                   className="bg-[#15BA5C] flex items-center rounded-[20px] px-2.5 py-1.5"
-//                 >
-//                   <Image
-//                     src={SettingFiles.EditIcon}
-//                     alt="Edit"
-//                     className="h-[14px] w-[14px] mr-1"
-//                   />
-//                   <span className="text-white">Edit</span>
-//                 </button>
-
-//                 <button
-//                   onClick={() => deleteTier(tier.id)}
-//                   type="button"
-//                   className="border border-[#E33629] flex items-center rounded-[20px] px-2.5 py-1.5"
-//                 >
-//                   <Image
-//                     src={SettingFiles.TrashIcon}
-//                     alt="Delete"
-//                     className="h-[14px] w-[14px] mr-1"
-//                   />
-//                   <span className="text-[#E33629]">Delete</span>
-//                 </button>
-//               </div>
-//             </div>
-//             <div className="text-sm text-gray-600 space-y-2">
-//               <div className="border border-[#E6E6E6] px-3.5 py-2.5 rounded-[12px]">
-//                 Markup: {tier.markupPercent}%
-//               </div>
-//               <div className="border border-[#E6E6E6] px-3.5 py-2.5 rounded-[12px]">
-//                 Discount: {tier.discountPercent}%
-//               </div>
-//             </div>
-//           </div>
-//         ))}
-
-//         <div className="">
-//           <h4 className="font-medium mb-4">Add New Price Tier</h4>
-//           <PriceTierForm onAdd={addTier} />
-//         </div>
-
-//         <div className="flex justify-end">
-//         <button onClick={handleSave} className="bg-[#15BA5C] w-full text-white py-3 rounded-[10px] font-medium text-base " type="button">
-//         Save all Price Tiers
-// </button>
-
-//         </div>
-//       </div>
-//     </Modal>
-//   );
-// };
-
-// interface PriceTierFormProps {
-//   onAdd: (tier: PriceTier) => void;
-// }
-
-// export const PriceTierForm: React.FC<PriceTierFormProps> = ({ onAdd }) => {
-//   const [tier, setTier] = useState<Partial<PriceTier>>({
-//     name: "",
-//     description: "",
-//     markupPercent: 0,
-//     discountPercent: 0,
-//   });
-
-//   const [markupEnabled, setMarkupEnabled] = useState(false);
-//   const [discountEnabled, setDiscountEnabled] = useState(false);
-
-//   const handleMarkupToggle = (enabled: boolean) => {
-//     setMarkupEnabled(enabled);
-//     if (enabled) {
-//       setDiscountEnabled(false);
-//       setTier((prev) => ({ ...prev, discountPercent: 0 }));
-//     }
-//   };
-
-//   const handleDiscountToggle = (enabled: boolean) => {
-//     setDiscountEnabled(enabled);
-//     if (enabled) {
-//       setMarkupEnabled(false);
-//       setTier((prev) => ({ ...prev, markupPercent: 0 }));
-//     }
-//   };
-
-//   const handleAdd = () => {
-//     if (!tier.name || tier.name.trim() === "") {
-//       alert("Please enter a price tier name.");
-//       return;
-//     }
-
-//     const newTier: PriceTier = {
-//       id: Date.now().toString(),
-//       name: tier.name,
-//       description: tier.description || "",
-//       markupPercent: markupEnabled ? tier.markupPercent || 0 : 0,
-//       discountPercent: discountEnabled ? tier.discountPercent || 0 : 0,
-//     };
-
-//     onAdd(newTier);
-
-//     setTier({
-//       name: "",
-//       description: "",
-//       markupPercent: 0,
-//       discountPercent: 0,
-//     });
-//     setMarkupEnabled(false);
-//     setDiscountEnabled(false);
-//   };
-
-//   return (
-//     <div className="space-y-4">
-//       <div>
-//         <label className="block text-sm font-medium">Price Tier Name</label>
-//         <Input
-//           className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg"
-//           value={tier.name || ""}
-//           onChange={(e) => setTier({ ...tier, name: e.target.value })}
-//           placeholder="Enter the name of the Price Tier"
-//         />
-//       </div>
-
-//       <div>
-//         <label className="block text-sm font-medium">Description (optional)</label>
-//         <textarea
-//           className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg resize-none text-sm"
-//           value={tier.description || ""}
-//           onChange={(e) => setTier({ ...tier, description: e.target.value })}
-//           placeholder="Enter description"
-//           rows={4}
-//         />
-//       </div>
-
-//       <div className="flex flex-col gap-3.5">
-//         <div className="flex items-center gap-[36px]">
-//           <label className="block text-sm font-medium mb-1">Markup % </label>
-//           <Switch checked={markupEnabled} onChange={handleMarkupToggle} />
-//         </div>
-
-//         {markupEnabled && (
-//           <Input
-//             className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg"
-//             type="number"
-//             min={0}
-//             value={tier.markupPercent || ""}
-//             onChange={(e) =>
-//               setTier({
-//                 ...tier,
-//                 markupPercent: parseFloat(e.target.value) || 0,
-//               })
-//             }
-//             placeholder="Enter markup percentage"
-//           />
-//         )}
-//       </div>
-
-//       <div>
-//         <div className="flex items-center gap-[36px]">
-//           <label className="block text-sm font-medium mb-1">Discount %</label>
-//           <Switch checked={discountEnabled} onChange={handleDiscountToggle} />
-//         </div>
-
-//         {discountEnabled && (
-//           <Input
-//             type="number"
-//             min={0}
-//             className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg"
-//             value={tier.discountPercent || ""}
-//             onChange={(e) =>
-//               setTier({
-//                 ...tier,
-//                 discountPercent: parseFloat(e.target.value) || 0,
-//               })
-//             }
-//             placeholder="Enter discount percentage"
-//           />
-//         )}
-//       </div>
-
-//       <button
-//         onClick={handleAdd}
-//         className="border border-[#15BA5C] w-full text-[#15BA5C] py-2 rounded-[10px] font-medium text-base mt-5"
-//         type="button"
-//       >
-//         + Add a new Price Tier
-//       </button>
-//     </div>
-//   );
-// };
-
-//Starts Here
-
 import React, { useState } from "react";
 import { Modal } from "../ui/Modal";
 import SettingFiles from "@/assets/icons/settings";
 import Image from "next/image";
 import { Input } from "../ui/Input";
-import { Switch } from "../ui/Switch";
 import settingsService from "@/services/settingsService";
+import { useBusinessStore } from "@/stores/useBusinessStore";
+import { Outlet, OutletAccess } from "@/types/outlet";
+import { ApiResponseType } from "@/types/httpTypes";
+import { toast } from "sonner";
 
+// Updated PriceTier interface to match your API response
 interface PriceTier {
-  id: string;
+  id: number;
   name: string;
-  description?: string;
-  markupPercent: number;
-  discountPercent: number;
+  description: string;
+  pricingRules: {
+    markupPercentage?: number;
+    discountPercentage?: number;
+    fixedMarkup?: number;
+    fixedDiscount?: number;
+  };
+  isActive: boolean;
   isEditing?: boolean;
+  isNew?: boolean; // Flag to track newly added tiers
 }
 
-interface OutletData {
-  outlet: {
-    id: number;
-    businessId: number;
-    name: string;
-    description?: string;
-    address: string;
-    state?: string;
-    postalCode?: string;
-    phoneNumber: string;
-    country: string;
-    isMainLocation: boolean;
-    isActive: boolean;
-    // ... other outlet properties
-  };
-  accessType: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  permissions?: any;
-}
+
 
 interface PriceSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  priceTiers: PriceTier[];
-  outletsData: OutletData[];
-  onSave: (tiers: PriceTier[]) => void;
 }
-
-// API function to save price tier to backend
-const savePriceTierToOutlet = async (outletId: number, tierData: PriceTier) => {
-  try {
-    // Update this URL to match your actual API endpoint
-   const result = await settingsService.addPriceTier({
-      outletId: outletId,
-      name:tierData.name,
-      description:tierData.description,
-      isActive: true,
-      pricingRules: {
-        discountPercentage: tierData.discountPercent,
-        markupPercentage: tierData.markupPercent,
-      },
-    });
-    return result
-
-  } catch (error) {
-    console.error(`Error saving price tier for outlet ${outletId}:`, error);
-    throw error;
-  }
-};
 
 export const PriceSettingsModal: React.FC<PriceSettingsModalProps> = ({
   isOpen,
   onClose,
-  priceTiers,
-  onSave,
-  outletsData,
 }) => {
-  const [tiers, setTiers] = useState<PriceTier[]>(priceTiers);
+  const { selectedOutletId, outlets } = useBusinessStore();
+  const [tiers, setTiers] = useState<PriceTier[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Reset tiers when modal opens with new data
+  // Initialize tiers only when modal opens and selectedOutletId exists
   React.useEffect(() => {
-    if (isOpen) {
-      setTiers(priceTiers);
+    if (isOpen && selectedOutletId) {
+      const outlet = outlets.find((val) => val.outlet.id === selectedOutletId);
+      if (outlet && Array.isArray(outlet.outlet.priceTier)) {
+        console.log(outlet.outlet.priceTier, "Loaded tiers");
+        setTiers(outlet.outlet.priceTier.map(tier => ({ ...tier, isEditing: false })));
+      } else {
+        setTiers([]);
+      }
     }
-  }, [isOpen, priceTiers]);
+  }, [isOpen, selectedOutletId, outlets]);
 
-  const addTier = (tier: PriceTier) => {
-    setTiers((prev) => [...prev, tier]);
+  if (!selectedOutletId) return null;
+
+  const addTier = (tier: Omit<PriceTier, 'id' | 'isActive'>) => {
+    const newTier: PriceTier = {
+      ...tier,
+      id: Date.now(), // Temporary ID for new tiers
+      isActive: true,
+      isNew: true, // Mark as new
+    };
+    setTiers((prev) => [...prev, newTier]);
   };
 
-  const deleteTier = (id: string) => {
-    setTiers((prev) => prev.filter((t) => t.id !== id));
+  const deleteTier = async (id: number) => {
+    const tierToDelete = tiers.find(t => t.id === id);
+    
+    // If it's a new tier (not saved to backend), just remove from state
+    if (tierToDelete?.isNew) {
+      setTiers((prev) => prev.filter((t) => t.id !== id));
+      return;
+    }
+
+    // Otherwise, delete from backend
+    const result = (await settingsService.deletePriceTier({
+      outletId: selectedOutletId,
+      priceTierId: id,
+    })) as ApiResponseType;
+    
+    if (result.status) {
+      setTiers((prev) => prev.filter((t) => t.id !== id));
+      toast.success("Price tier deleted successfully");
+    } else {
+      toast.error("Failed to delete price tier");
+    }
   };
 
-  const toggleEdit = (id: string) => {
+  const toggleEdit = (id: number) => {
     setTiers((prev) =>
       prev.map((tier) =>
         tier.id === id ? { ...tier, isEditing: !tier.isEditing } : tier
@@ -351,96 +96,87 @@ export const PriceSettingsModal: React.FC<PriceSettingsModalProps> = ({
     );
   };
 
-  const updateTier = (id: string, updatedTier: Partial<PriceTier>) => {
+  const updateTier = (id: number, updatedTier: Partial<PriceTier>) => {
     setTiers((prev) =>
       prev.map((tier) => (tier.id === id ? { ...tier, ...updatedTier } : tier))
     );
+    
+    // If it's not a new tier, save to backend immediately
+    const tier = tiers.find(t => t.id === id);
+    if (tier && !tier.isNew) {
+      saveTierToBackend({ ...tier, ...updatedTier });
+    }
+  };
+
+  const saveTierToBackend = async (tier: PriceTier) => {
+    try {
+      if (tier.isNew) {
+        // Create new tier
+        const result = await settingsService.addPriceTier({
+          outletId: selectedOutletId,
+          name: tier.name,
+          description: tier.description,
+          pricingRules: tier.pricingRules,
+          isActive: tier.isActive,
+        });
+        
+        if (result.status) {
+          // Update the tier in state to mark it as saved
+          setTiers(prev => prev.map(t => 
+            t.id === tier.id ? { ...t, isNew: false } : t
+          ));
+        }
+      
+      }
+    } catch (error) {
+      console.error("Failed to save tier", error);
+      toast.error("Failed to save price tier");
+    }
   };
 
   const handleSaveAll = async () => {
-    if (tiers.length === 0) {
-      alert("No price tiers to save.");
-      return;
-    }
-
-    if (!outletsData || outletsData.length === 0) {
-      alert("No outlets found to save price tiers to.");
+    const newTiers = tiers.filter(tier => tier.isNew);
+    
+    if (newTiers.length === 0) {
+      toast.info("No new price tiers to save.");
       return;
     }
 
     setIsSaving(true);
-
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const savePromises: Promise<any>[] = [];
-      let successCount = 0;
-      let errorCount = 0;
-      const errors: string[] = [];
+      const results = await Promise.allSettled(
+        newTiers.map((tier) =>
+          settingsService.addPriceTier({
+            outletId: selectedOutletId,
+            name: tier.name,
+            description: tier.description,
+            pricingRules: tier.pricingRules,
+            isActive: tier.isActive,
+          })
+        )
+      );
 
-      // Save each tier to all outlets
-      for (const tier of tiers) {
-        for (const outletData of outletsData) {
-          try {
-            
-            const promise = savePriceTierToOutlet(outletData.outlet.id, tier);
-
-            savePromises.push(promise);
-          } catch (error) {
-            console.log(error)
-            errorCount++;
-            errors.push(
-              `Failed to save "${tier.name}" to ${outletData.outlet.name}`
-            );
-          }
-        }
-      }
-
-      // Wait for all saves to complete
-      const results = await Promise.allSettled(savePromises);
-
-      results.forEach((result, index) => {
-        if (result.status === "fulfilled") {
-          successCount++;
-        } else {
-          errorCount++;
-          const tierIndex = Math.floor(index / outletsData.length);
-          const outletIndex = index % outletsData.length;
-          const tierName = tiers[tierIndex]?.name || "Unknown";
-          const outletName =
-            outletsData[outletIndex]?.outlet?.name || "Unknown";
-          errors.push(
-            `Failed to save "${tierName}" to ${outletName}: ${
-              result.reason?.message || "Unknown error"
-            }`
-          );
-        }
-      });
-
-      // Update parent state with current tiers
-      onSave(tiers);
-
-      if (errorCount === 0) {
-        alert(
-          `Successfully saved ${tiers.length} price tier(s) to ${outletsData.length} outlet(s)!`
-        );
-        onClose();
+      const failed = results.filter((res) => res.status === "rejected");
+      if (failed.length > 0) {
+        toast.error(`${failed.length} tier(s) failed to save.`);
       } else {
-        const message = `Saved ${successCount} items successfully, but ${errorCount} failed.\n\nErrors:\n${errors.join(
-          "\n"
-        )}`;
-        alert(message);
-        console.error("Save errors:", errors);
-
-        // Don't close modal if there were errors so user can retry
+        toast.success("All price tiers saved successfully.");
+        // Mark all tiers as saved
+        setTiers(prev => prev.map(tier => ({ ...tier, isNew: false })));
       }
     } catch (error) {
-      console.error("Unexpected error saving price tiers:", error);
-      alert(
-        "An unexpected error occurred while saving price tiers. Please try again."
-      );
+      console.error("Failed to save tiers", error);
+      toast.error("An unexpected error occurred while saving price tiers.");
     } finally {
       setIsSaving(false);
     }
+  };
+
+  // Helper function to get display values for markup/discount
+  const getDisplayValue = (tier: PriceTier) => {
+    const markup = tier.pricingRules.markupPercentage || 0;
+    const discount = tier.pricingRules.discountPercentage || 0;
+    return { markup, discount };
   };
 
   return (
@@ -453,111 +189,97 @@ export const PriceSettingsModal: React.FC<PriceSettingsModalProps> = ({
       title="Price Settings"
     >
       <div className="space-y-6">
-        {tiers.length > 0 ? (
-          tiers.map((tier) => (
-            <div
-              key={tier.id}
-              className="rounded-lg p-4 border border-gray-200"
-            >
-              {tier.isEditing ? (
-                <EditableTierForm
-                  tier={tier}
-                  onSave={(updatedTier) => {
-                    updateTier(tier.id, { ...updatedTier, isEditing: false });
-                  }}
-                  onCancel={() => toggleEdit(tier.id)}
-                />
-              ) : (
-                <>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium">{tier.name}</span>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => toggleEdit(tier.id)}
-                        type="button"
-                        className="bg-[#15BA5C] flex items-center rounded-[20px] px-2.5 py-1.5 hover:bg-[#13a552] transition-colors"
-                      >
-                        <Image
-                          src={SettingFiles.EditIcon}
-                          alt="Edit"
-                          className="h-[14px] w-[14px] mr-1"
-                        />
-                        <span className="text-white">Edit</span>
-                      </button>
-
-                      <button
-                        onClick={() => deleteTier(tier.id)}
-                        type="button"
-                        className="border border-[#E33629] flex items-center rounded-[20px] px-2.5 py-1.5 hover:bg-red-50 transition-colors"
-                      >
-                        <Image
-                          src={SettingFiles.TrashIcon}
-                          alt="Delete"
-                          className="h-[14px] w-[14px] mr-1"
-                        />
-                        <span className="text-[#E33629]">Delete</span>
-                      </button>
+        {tiers.length > 0 &&
+          tiers.map((tier) => {
+            const { markup, discount } = getDisplayValue(tier);
+            
+            return (
+              <div
+                key={tier.id}
+                className="rounded-lg p-4 border border-gray-200"
+              >
+                {tier.isEditing ? (
+                  <EditableTierForm
+                    tier={tier}
+                    onSave={(updatedTier) => {
+                      updateTier(tier.id, { ...updatedTier, isEditing: false });
+                    }}
+                    onCancel={() => toggleEdit(tier.id)}
+                  />
+                ) : (
+                  <>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-medium">{tier.name}</span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => toggleEdit(tier.id)}
+                          type="button"
+                          className="bg-[#15BA5C] flex items-center rounded-[20px] px-2.5 py-1.5 hover:bg-[#13a552] transition-colors"
+                        >
+                          <Image
+                            src={SettingFiles.EditIcon}
+                            alt="Edit"
+                            className="h-[14px] w-[14px] mr-1"
+                          />
+                          <span className="text-white">Edit</span>
+                        </button>
+                        <button
+                          onClick={() => deleteTier(tier.id)}
+                          type="button"
+                          className="border border-[#E33629] flex items-center rounded-[20px] px-2.5 py-1.5 hover:bg-red-50 transition-colors"
+                        >
+                          <Image
+                            src={SettingFiles.TrashIcon}
+                            alt="Delete"
+                            className="h-[14px] w-[14px] mr-1"
+                          />
+                          <span className="text-[#E33629]">Delete</span>
+                        </button>
+                      </div>
                     </div>
-                  </div>
 
-                  {tier.description && (
-                    <div className="text-sm text-gray-600 mb-2">
-                      {tier.description}
-                    </div>
-                  )}
+                    {tier.description && (
+                      <div className="text-sm text-gray-600 mb-2">
+                        {tier.description}
+                      </div>
+                    )}
 
-                  <div className="text-sm text-gray-600 space-y-2">
-                    <div className="border border-[#E6E6E6] px-3.5 py-2.5 rounded-[12px]">
-                      Markup: {tier.markupPercent}%
+                    <div className="text-sm text-gray-600 space-y-2">
+                      <div className="border border-[#E6E6E6] px-3.5 py-2.5 rounded-[12px]">
+                        Markup: {markup}%
+                      </div>
+                      <div className="border border-[#E6E6E6] px-3.5 py-2.5 rounded-[12px]">
+                        Discount: {discount}%
+                      </div>
                     </div>
-                    <div className="border border-[#E6E6E6] px-3.5 py-2.5 rounded-[12px]">
-                      Discount: {tier.discountPercent}%
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-          ))
-        ) : (
-          <div className="text-center py-8 text-gray-500">
-            <p>No price tiers added yet.</p>
-            <p className="text-sm">Add your first price tier below.</p>
-          </div>
-        )}
+                  </>
+                )}
+              </div>
+            );
+          })}
 
-        <div className="">
+        <div>
           <h4 className="font-medium mb-4">Add New Price Tier</h4>
           <PriceTierForm onAdd={addTier} />
         </div>
 
-        <div className="flex flex-col gap-3">
-          
-
-          <button
-            onClick={handleSaveAll}
-            disabled={
-              isSaving ||
-              tiers.length === 0 ||
-              !outletsData ||
-              outletsData.length === 0
-            }
-            className={`w-full text-white py-3 rounded-[10px] font-medium text-base transition-colors ${
-              isSaving ||
-              tiers.length === 0 ||
-              !outletsData ||
-              outletsData.length === 0
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-[#15BA5C] hover:bg-[#13a552]"
-            }`}
-            type="button"
-          >
-            {isSaving
-              ? "Saving..."
-              : `Save all Price Tiers to ${outletsData?.length || 0} Outlet${
-                  (outletsData?.length || 0) !== 1 ? "s" : ""
-                }`}
-          </button>
-        </div>
+        {/* Only show save button if there are new tiers */}
+        {tiers.some(tier => tier.isNew) && (
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={handleSaveAll}
+              disabled={isSaving}
+              className={`w-full text-white py-3 rounded-[10px] font-medium text-base transition-colors ${
+                isSaving
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-[#15BA5C] hover:bg-[#13a552]"
+              }`}
+              type="button"
+            >
+              {isSaving ? "Saving..." : "Save all Price Tiers"}
+            </button>
+          </div>
+        )}
       </div>
     </Modal>
   );
@@ -578,14 +300,12 @@ const EditableTierForm: React.FC<EditableTierFormProps> = ({
   const [editedTier, setEditedTier] = useState({
     name: tier.name,
     description: tier.description || "",
-    markupPercent: tier.markupPercent,
-    discountPercent: tier.discountPercent,
+    markupPercent: tier.pricingRules.markupPercentage || 0,
+    discountPercent: tier.pricingRules.discountPercentage || 0,
   });
 
-  const [markupEnabled, setMarkupEnabled] = useState(tier.markupPercent > 0);
-  const [discountEnabled, setDiscountEnabled] = useState(
-    tier.discountPercent > 0
-  );
+  const [markupEnabled, setMarkupEnabled] = useState((tier.pricingRules.markupPercentage || 0) > 0);
+  const [discountEnabled, setDiscountEnabled] = useState((tier.pricingRules.discountPercentage || 0) > 0);
 
   const handleMarkupToggle = (enabled: boolean) => {
     setMarkupEnabled(enabled);
@@ -616,8 +336,10 @@ const EditableTierForm: React.FC<EditableTierFormProps> = ({
     onSave({
       name: editedTier.name.trim(),
       description: editedTier.description.trim(),
-      markupPercent: markupEnabled ? editedTier.markupPercent : 0,
-      discountPercent: discountEnabled ? editedTier.discountPercent : 0,
+      pricingRules: {
+        markupPercentage: markupEnabled ? editedTier.markupPercent : undefined,
+        discountPercentage: discountEnabled ? editedTier.discountPercent : undefined,
+      },
     });
   };
 
@@ -653,9 +375,17 @@ const EditableTierForm: React.FC<EditableTierFormProps> = ({
       </div>
 
       <div className="flex flex-col gap-3">
-        <div className="flex items-center gap-[36px]">
-          <label className="block text-sm font-medium">Markup %</label>
-          <Switch checked={markupEnabled} onChange={handleMarkupToggle} />
+        <div className="flex items-center gap-3">
+          <input
+            type="checkbox"
+            id="markup-checkbox"
+            checked={markupEnabled}
+            onChange={(e) => handleMarkupToggle(e.target.checked)}
+            className="w-4 h-4 text-[#15BA5C] border-gray-300 rounded focus:ring-[#15BA5C]"
+          />
+          <label htmlFor="markup-checkbox" className="text-sm font-medium">
+            Markup %
+          </label>
         </div>
 
         {markupEnabled && (
@@ -677,9 +407,17 @@ const EditableTierForm: React.FC<EditableTierFormProps> = ({
       </div>
 
       <div className="flex flex-col gap-3">
-        <div className="flex items-center gap-[36px]">
-          <label className="block text-sm font-medium">Discount %</label>
-          <Switch checked={discountEnabled} onChange={handleDiscountToggle} />
+        <div className="flex items-center gap-3">
+          <input
+            type="checkbox"
+            id="discount-checkbox"
+            checked={discountEnabled}
+            onChange={(e) => handleDiscountToggle(e.target.checked)}
+            className="w-4 h-4 text-[#15BA5C] border-gray-300 rounded focus:ring-[#15BA5C]"
+          />
+          <label htmlFor="discount-checkbox" className="text-sm font-medium">
+            Discount %
+          </label>
         </div>
 
         {discountEnabled && (
@@ -720,13 +458,13 @@ const EditableTierForm: React.FC<EditableTierFormProps> = ({
   );
 };
 
-// Keep the original PriceTierForm component
+// Form component for adding new tiers
 interface PriceTierFormProps {
-  onAdd: (tier: PriceTier) => void;
+  onAdd: (tier: Omit<PriceTier, 'id' | 'isActive'>) => void;
 }
 
 export const PriceTierForm: React.FC<PriceTierFormProps> = ({ onAdd }) => {
-  const [tier, setTier] = useState<Partial<PriceTier>>({
+  const [tier, setTier] = useState({
     name: "",
     description: "",
     markupPercent: 0,
@@ -758,12 +496,13 @@ export const PriceTierForm: React.FC<PriceTierFormProps> = ({ onAdd }) => {
       return;
     }
 
-    const newTier: PriceTier = {
-      id: Date.now().toString(),
+    const newTier = {
       name: tier.name.trim(),
-      description: tier.description?.trim() || "",
-      markupPercent: markupEnabled ? tier.markupPercent || 0 : 0,
-      discountPercent: discountEnabled ? tier.discountPercent || 0 : 0,
+      description: tier.description.trim(),
+      pricingRules: {
+        markupPercentage: markupEnabled ? tier.markupPercent : undefined,
+        discountPercentage: discountEnabled ? tier.discountPercent : undefined,
+      },
     };
 
     onAdd(newTier);
@@ -787,7 +526,7 @@ export const PriceTierForm: React.FC<PriceTierFormProps> = ({ onAdd }) => {
         </label>
         <Input
           className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg"
-          value={tier.name || ""}
+          value={tier.name}
           onChange={(e) => setTier({ ...tier, name: e.target.value })}
           placeholder="Enter the name of the Price Tier"
         />
@@ -799,7 +538,7 @@ export const PriceTierForm: React.FC<PriceTierFormProps> = ({ onAdd }) => {
         </label>
         <textarea
           className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg resize-none text-sm"
-          value={tier.description || ""}
+          value={tier.description}
           onChange={(e) => setTier({ ...tier, description: e.target.value })}
           placeholder="Enter description"
           rows={3}
@@ -807,9 +546,17 @@ export const PriceTierForm: React.FC<PriceTierFormProps> = ({ onAdd }) => {
       </div>
 
       <div className="flex flex-col gap-3">
-        <div className="flex items-center gap-[36px]">
-          <label className="block text-sm font-medium">Markup %</label>
-          <Switch checked={markupEnabled} onChange={handleMarkupToggle} />
+        <div className="flex items-center gap-3">
+          <input
+            type="checkbox"
+            id="new-markup-checkbox"
+            checked={markupEnabled}
+            onChange={(e) => handleMarkupToggle(e.target.checked)}
+            className="w-4 h-4 text-[#15BA5C] border-gray-300 rounded focus:ring-[#15BA5C]"
+          />
+          <label htmlFor="new-markup-checkbox" className="text-sm font-medium">
+            Markup %
+          </label>
         </div>
 
         {markupEnabled && (
@@ -831,9 +578,17 @@ export const PriceTierForm: React.FC<PriceTierFormProps> = ({ onAdd }) => {
       </div>
 
       <div className="flex flex-col gap-3">
-        <div className="flex items-center gap-[36px]">
-          <label className="block text-sm font-medium">Discount %</label>
-          <Switch checked={discountEnabled} onChange={handleDiscountToggle} />
+        <div className="flex items-center gap-3">
+          <input
+            type="checkbox"
+            id="new-discount-checkbox"
+            checked={discountEnabled}
+            onChange={(e) => handleDiscountToggle(e.target.checked)}
+            className="w-4 h-4 text-[#15BA5C] border-gray-300 rounded focus:ring-[#15BA5C]"
+          />
+          <label htmlFor="new-discount-checkbox" className="text-sm font-medium">
+            Discount %
+          </label>
         </div>
 
         {discountEnabled && (

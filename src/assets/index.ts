@@ -20,6 +20,9 @@ import ReportAnalyticsIcon from "@/assets/icons/ReportAnalyticsIcon.svg";
 import RolesIcon from "@/assets/icons/RolesIcon.svg";
 import DistributionIcon from "@/assets/icons/DistributionIcon.svg";
 
+//Page Icons SVG
+import ProductionManagementIcon from "@/assets/icons/ProductionManagementIcon.svg";
+
 
 
 const AssetsFiles = {
@@ -42,6 +45,10 @@ const AssetsFiles = {
   ReportAnalyticsIcon,
   DistributionIcon,
   RolesIcon,
+
+
+  //Page Icons
+  ProductionManagementIcon,
 };
 
 export default AssetsFiles;

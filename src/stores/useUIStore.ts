@@ -16,7 +16,7 @@ export const useModalStore = create<UIState>((set) => ({
   isLoading: false,
   setIsLoading: (value) => set({ isLoading: value }),
 
-  showFullDashboardSidebar: false,
+  showFullDashboardSidebar: true,
   setShowFullDashboardSidebar: (value) =>
     set({ showFullDashboardSidebar: value }),
 }));

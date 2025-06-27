@@ -1,11 +1,18 @@
-// LabellingSettingsModal.tsx
-import React, { useState } from "react";
+"use client"
+
+import React, { useState, useEffect } from "react";
 import { Modal } from "../ui/Modal";
 import { Button } from "../ui/Button";
 import { Switch } from "../ui/Switch";
 import SettingFiles from "@/assets/icons/settings";
 import FileUploadComponent from "@/components/Upload/FileUploadComponent";
 import { Dropdown } from "../ui/Dropdown";
+import settingsService from "@/services/settingsService";
+import { useBusinessStore } from "@/stores/useBusinessStore";
+import { ApiResponseType } from "@/types/httpTypes";
+import { toast } from "sonner";
+import { useSelectedOutlet } from "@/hooks/useSelectedOutlet";
+import Image from "next/image";
 
 interface LabellingSettingsModalProps {
   isOpen: boolean;
@@ -30,14 +37,18 @@ export const LabellingSettingsModal: React.FC<LabellingSettingsModalProps> = ({
   isOpen,
   onClose,
 }) => {
+  const { selectedOutletId, loading } = useBusinessStore();
+  const selectedOutlet = useSelectedOutlet();
+
+  const [isClient, setIsClient] = useState(false);
   const [formData, setFormData] = useState({
     showBakeyName: false,
     showPaymentSuccess: false,
-    fontSize: "small", // use option values here
-    paperSize: "tape", // use option values here
+    fontSize: "productSans",
+    paperSize: "a4",
     showBarcode: true,
-    header: "Establishment Business Text",
-    customBusinessText: "Customized Business Text",
+    header: "",
+    customBusinessText: "",
     showBusinessLine: true,
     labelItems: [
       { name: "Label Name", enabled: true },
@@ -56,10 +67,73 @@ export const LabellingSettingsModal: React.FC<LabellingSettingsModalProps> = ({
   });
   const [imageUrl, setImageUrl] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Always call hooks before early returns
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (isOpen && selectedOutlet?.outlet.labelSettings) {
+      const settings = selectedOutlet.outlet.labelSettings;
+
+      setFormData({
+        showBakeyName: settings.showBakeryName,
+        showPaymentSuccess: settings.showPaymentSuccessText,
+        fontSize: settings.fontStyle,
+        paperSize: settings.paperSize,
+        showBarcode: settings.showProductBarCode,
+        header: settings.customHeader,
+        customBusinessText: settings.customSuccessText,
+        showBusinessLine: settings.showTotalPaidAtTop,
+        customMessage: settings.customThankYouMessage,
+        labelItems: [
+          { name: "Label Name", enabled: settings.showLabelName },
+          { name: "Label Type", enabled: settings.showLabelType },
+          { name: "Product Name", enabled: settings.showProductName },
+          { name: "Best Before", enabled: settings.showExpiryDate },
+          { name: "Product Weight", enabled: settings.showWeight },
+          { name: "Best Number", enabled: settings.showBatchNumber },
+          { name: "ManufacturedDate", enabled: settings.showManufacturingDate },
+          { name: "Barcode", enabled: settings.showProductBarCode },
+          {
+            name: "Business Summary",
+            enabled: settings.showIngredientsSummary,
+          },
+          { name: "Allergen", enabled: settings.showAllergenInfo },
+          { name: "Price", enabled: settings.showPrice },
+        ],
+      });
+
+      if (settings.customizedLogoUrl) {
+        setImageUrl(settings.customizedLogoUrl);
+      }
+    }
+  }, [isOpen, selectedOutlet]);
+
+  // Safe early return now that all hooks are declared
+  if (loading || !isClient) {
+    return null;
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(imageUrl);
-    onClose();
+    try {
+      const result = (await settingsService.updateLabelSettings(
+        formData,
+        selectedOutletId as number,
+        imageUrl
+      )) as ApiResponseType;
+
+      if (result.status) {
+        toast.success("Successfully created the labelling");
+        onClose();
+      } else {
+        toast.error("Failed to update labelling settings");
+      }
+    } catch (error) {
+      console.error("Error updating label settings:", error);
+      toast.error("An error occurred while updating settings");
+    }
   };
 
   const toggleLabelItem = (index: number) => {
@@ -80,13 +154,23 @@ export const LabellingSettingsModal: React.FC<LabellingSettingsModalProps> = ({
       title="Labelling"
       subtitle="Customize your product labels"
     >
-      <section className="flex ">
-        <div className="space-y-6 flex-1/2">
+      <section className="flex">
+        <div className="space-y-6 flex-1">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="px-3.5 py-1.5">
               <h4 className="font-medium mb-4">Label Branding</h4>
-              <FileUploadComponent setImageUrl={setImageUrl} />
-              <div className="space-y-4">
+              {imageUrl ? (
+                <Image
+                height={140}
+                width={140}
+                  alt="Logo"
+                  src={imageUrl}
+                  className="h-[140px] w-[140px] "
+                />
+              ) : (
+                <FileUploadComponent setImageUrl={setImageUrl} />
+              )}
+              <div className="space-y-4 mt-3.5">
                 <div className="flex items-center justify-between">
                   <label className="text-sm font-medium text-[#737373]">
                     Show Bakery name
@@ -104,13 +188,12 @@ export const LabellingSettingsModal: React.FC<LabellingSettingsModalProps> = ({
 
                 <div className="">
                   <div className="flex justify-between items-center mb-4">
-                    <label className="flex-1/2 block text-sm font-medium text-[#737373] whitespace-nowrap">
+                    <label className="flex-1 block text-sm font-medium text-[#737373] whitespace-nowrap mr-4">
                       Font Style
                     </label>
-
-                    <div className="w-full ml-4">
+                    <div className="w-full">
                       <Dropdown
-                        className="bg-[#FAFAFC] "
+                        className="bg-[#FAFAFC]"
                         label="Fonts"
                         options={fontOptions}
                         selectedValue={formData.fontSize}
@@ -126,13 +209,12 @@ export const LabellingSettingsModal: React.FC<LabellingSettingsModalProps> = ({
                   </div>
 
                   <div className="flex justify-between items-center mb-4">
-                    <label className="flex-1/2 block text-sm font-medium text-[#737373] whitespace-nowrap">
-                      Paper Size{" "}
+                    <label className="flex-1 block text-sm font-medium text-[#737373] whitespace-nowrap mr-4">
+                      Paper Size
                     </label>
-
-                    <div className="w-full ml-4">
+                    <div className="w-full">
                       <Dropdown
-                        className="bg-[#FAFAFC] "
+                        className="bg-[#FAFAFC]"
                         label="Paper size"
                         options={paperSizeOptions}
                         selectedValue={formData.paperSize}
@@ -140,7 +222,7 @@ export const LabellingSettingsModal: React.FC<LabellingSettingsModalProps> = ({
                         onChange={(value) =>
                           setFormData((prev) => ({
                             ...prev,
-                            fontSize: value,
+                            paperSize: value,
                           }))
                         }
                       />
@@ -174,9 +256,8 @@ export const LabellingSettingsModal: React.FC<LabellingSettingsModalProps> = ({
                   </label>
                   <input
                     type="text"
-                    name=""
-                    className="outline-none text-[12px]  border-2 border-[#D1D1D1] w-full px-3.5 py-2.5 bg-[#FAFAFC] rounded-[10px]"
-                    id=""
+                    value={formData.customBusinessText}
+                    className="outline-none text-[12px] border-2 border-[#D1D1D1] w-full px-3.5 py-2.5 bg-[#FAFAFC] rounded-[10px]"
                     placeholder="Enter Success text, e.g Payment successful!"
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -229,7 +310,7 @@ export const LabellingSettingsModal: React.FC<LabellingSettingsModalProps> = ({
                 Custom &quot;Thank you&quot; Message
               </label>
               <textarea
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg resize-none outline-none "
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg resize-none outline-none"
                 rows={3}
                 value={formData.customMessage}
                 onChange={(e) =>
@@ -247,7 +328,7 @@ export const LabellingSettingsModal: React.FC<LabellingSettingsModalProps> = ({
             </Button>
           </form>
         </div>
-        <div className="flex-1/2"></div>
+        <div className="flex-1"></div>
       </section>
     </Modal>
   );

@@ -1,10 +1,36 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Modal } from "../ui/Modal";
 import { Button } from "../ui/Button";
 import { Switch } from "../ui/Switch";
 import SettingFiles from "@/assets/icons/settings";
 import FileUploadComponent from "@/components/Upload/FileUploadComponent";
 import { Dropdown } from "../ui/Dropdown";
+import settingsService from "@/services/settingsService";
+import { useSelectedOutlet } from "@/hooks/useSelectedOutlet";
+import { useBusinessStore } from "@/stores/useBusinessStore";
+import { ApiResponseType } from "@/types/httpTypes";
+
+const fontOptions = [
+  { value: "productSans", label: "Product Sans" },
+  { value: "outfit", label: "Outfit" },
+  { value: "urbanist", label: "Urbanist" },
+  { value: "montserrat", label: "Montserrat" },
+];
+
+const paperSizeOptions = [
+  { value: "a4", label: "A4" },
+  { value: "a2", label: "A2" },
+  { value: "a3", label: "A3" },
+  { value: "a1", label: "A1" },
+];
+
+const columnOptions = [
+  { value: "orderName", label: "Order Name" },
+  { value: "sku", label: "SKU" },
+  { value: "qty", label: "Quantity" },
+  { value: "subTotal", label: "Subtotal" },
+  { value: "total", label: "Total" },
+];
 
 interface ReceiptCustomizationModalProps {
   isOpen: boolean;
@@ -46,31 +72,61 @@ export const ReceiptCustomizationModal: React.FC<
     customMessage: "",
   });
   const [imageUrl, setImageUrl] = useState("");
-  const fontOptions = [
-    { value: "productSans", label: "Product Sans" },
-    { value: "outfit", label: "Outfit" },
-    { value: "urbanist", label: "Urbanist" },
-    { value: "montserrat", label: "Montserrat" },
-  ];
+  const { selectedOutletId, loading } = useBusinessStore();
+  const selectedOutlet = useSelectedOutlet();
 
-  const paperSizeOptions = [
-    { value: "a4", label: "A4" },
-    { value: "a2", label: "A2" },
-    { value: "a3", label: "A3" },
-    { value: "a1", label: "A1" },
-  ];
+  const [isClient, setIsClient] = useState(false);
 
-  const columnOptions = [
-    { value: "orderName", label: "Order Name" },
-    { value: "sku", label: "SKU" },
-    { value: "qty", label: "Quantity" },
-    { value: "subTotal", label: "Subtotal" },
-    { value: "total", label: "Total" },
-  ];
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (isOpen && selectedOutlet?.outlet.receiptSettings) {
+      const settings = selectedOutlet.outlet.receiptSettings;
+      if(settings.customizedLogoUrl){
+        setImageUrl(settings.customizedLogoUrl)
+      }
+
+      setFormData({
+        
+        showRestaurantName: settings.showBakeryName,
+        showPaymentSucessText: settings.showPaymentSuccessText,
+        fontStyle: settings.fontStyle,
+        paperSize: settings.paperSize,
+        showOrderName: settings.showOrderName,
+        showDiscountLine:settings.showDiscounts,
+        showTax:settings.showTaxDetails,
+        customizeSuccessText:settings.customSuccessText,
+        
+        customMessage:settings.customThankYouMessage
+        
+      });
+
+      if (settings.customizedLogoUrl) {
+        setImageUrl(settings.customizedLogoUrl);
+      }
+    }
+  }, [isOpen, selectedOutlet]);
+
+  // Safe early return now that all hooks are declared
+  if (loading || !isClient) {
+    return null;
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(imageUrl)
+    try {
+      const result = (await settingsService.updateLabelSettings(
+        formData,
+        selectedOutletId as number,
+        imageUrl
+      )) as ApiResponseType;
+    } catch (error) {
+      console.log(error);
+    }
+
+    console.log(imageUrl);
     onClose();
   };
 

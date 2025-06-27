@@ -71,20 +71,6 @@ const SettingsPage: React.FC = () => {
   ]);
 
   const [priceTiers, setPriceTiers] = useState<PriceTier[]>([
-    {
-      id: "1",
-      name: "Mark up 10%",
-      description: "",
-      markupPercent: 10,
-      discountPercent: 0,
-    },
-    {
-      id: "2",
-      name: "Mark up 10%",
-      description: "",
-      markupPercent: 10,
-      discountPercent: 0,
-    },
   ]);
 
   const handleSettingClick = (id: string) => {
@@ -156,9 +142,6 @@ const SettingsPage: React.FC = () => {
       <PriceSettingsModal
         isOpen={activeModal === "pricing"}
         onClose={() => setActiveModal(null)}
-        priceTiers={priceTiers}
-        onSave={setPriceTiers}
-        outletsData={outletsData}
       />
 
       <PasswordSettingsModal
@@ -169,6 +152,7 @@ const SettingsPage: React.FC = () => {
       <LabellingSettingsModal
         isOpen={activeModal === "labelling-settings"}
         onClose={() => setActiveModal(null)}
+
       />
 
       <InventoryHubModal

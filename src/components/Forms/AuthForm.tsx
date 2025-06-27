@@ -151,7 +151,7 @@ const AuthForm = ({ mode }: Props) => {
       console.log("User data:", response);
       // Store user data
       // setCookie("bountipLoginUser", userData, { expiresInMinutes: 60 * 120 });
-      setCookie(COOKIE_NAMES.BOUNTIP_LOGIN_USER, userData, { expiresInMinutes: 60 * 120 });
+      setCookie(COOKIE_NAMES.BOUNTIP_LOGIN_USER, userData);
       // const userTokens = getCookie("bountipRegisteredUsers");
       const userTokens = getCookie(COOKIE_NAMES.BOUNTIP_REGISTERED_USERS);
       
@@ -163,8 +163,7 @@ const AuthForm = ({ mode }: Props) => {
         {
           accessToken: response.data.tokens.accessToken,
           refreshToken: response.data.tokens.refreshToken,
-        },
-        { expiresInMinutes: 60 * 120 }
+        }
       );
       if (userTokens) {
         router.push("/onboarding");
@@ -205,8 +204,7 @@ const AuthForm = ({ mode }: Props) => {
           {
             accessToken: response.data.tokens.accessToken,
             refreshToken: response.data.tokens.refreshToken,
-          },
-          { expiresInMinutes: 60 * 120 }
+          }
         );
       }
     }

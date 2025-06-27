@@ -9,7 +9,7 @@ interface SwitchProps {
 export const Switch: React.FC<SwitchProps> = ({ checked, onChange, label }) => {
   return (
     <label className="flex items-center cursor-pointer space-x-3">
-      <div className="relative">
+      <div className="relative w-10 h-4">
         <input
           type="checkbox"
           checked={checked}
@@ -17,12 +17,12 @@ export const Switch: React.FC<SwitchProps> = ({ checked, onChange, label }) => {
           className="sr-only peer"
         />
         <div
-          className={`w-8 h-3 rounded-full transition-colors duration-200 ${
+          className={`w-full h-full rounded-full transition-colors duration-200 ${
             checked ? "bg-green-500" : "bg-gray-300"
           }`}
         ></div>
         <div
-          className={`absolute top-0.5 left-0.5 w-2 h-2 bg-white rounded-full shadow transition-transform duration-200 ${
+          className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full shadow transition-transform duration-200 ${
             checked ? "translate-x-5" : "translate-x-0"
           }`}
         />
