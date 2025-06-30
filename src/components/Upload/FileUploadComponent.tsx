@@ -46,6 +46,7 @@ const FileUploadComponent: React.FC<FileUploadComponentProps> = ({
   const handleFileUpload = async (file: File) => {
     setIsUploading(true);
     try {
+      console.log("Uploading file:", file);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const response:any = await uploadService.uploadImage(
         file,

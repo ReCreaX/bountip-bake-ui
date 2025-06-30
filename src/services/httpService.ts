@@ -15,7 +15,7 @@ export class HttpService {
   private baseUrl: string;
   private isRefreshing: Record<string, boolean> = {};
 
-  constructor(env: BaseUrlProdType = "live") {
+  constructor(env: BaseUrlProdType = "local") {
     this.baseUrl = getBaseUrl(env);
   }
 
@@ -148,8 +148,8 @@ export class HttpService {
       if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`;
 
       //return fetch(`${this.baseUrl}${path}`, {
-      return fetch(`https://seal-app-wzqhf.ondigitalocean.app${path}`, {
-        // return fetch(`http://localhost:8000${path}`, {
+      //return fetch(`https://seal-app-wzqhf.ondigitalocean.app${path}`, {
+       return fetch(`http://localhost:8000${path}`, {
         method: "POST",
         // headers,
         body: formData,

@@ -154,7 +154,6 @@ const AuthForm = ({ mode }: Props) => {
       setCookie(COOKIE_NAMES.BOUNTIP_LOGIN_USER, userData);
       // const userTokens = getCookie("bountipRegisteredUsers");
       const userTokens = getCookie(COOKIE_NAMES.BOUNTIP_REGISTERED_USERS);
-      
 
       // Store tokens as object under a login-specific cookie name
       setCookie(
@@ -414,6 +413,19 @@ const AuthForm = ({ mode }: Props) => {
           </div>
         )}
 
+        {/* Toggle Email / PIN login */}
+        {mode === "signin" && (
+          <button
+            type="button"
+            onClick={() => setPinLogin(!pinLogin)}
+            className="flex items-center justify-center gap-2 border py-3.5 rounded-[10px] border-[#E6E6E6] hover:bg-gray-50 transition-colors"
+          >
+            <LockKeyhole />
+            <span className="text-[#1E1E1E] text-[17px] font-normal">
+              {pinLogin ? "Login with Email" : "Login with Pin"}
+            </span>
+          </button>
+        )}
         {!pinLogin && (
           <>
             <div className="flex items-center w-full my-4">
@@ -435,20 +447,6 @@ const AuthForm = ({ mode }: Props) => {
               </span>
             </button>
           </>
-        )}
-
-        {/* Toggle Email / PIN login */}
-        {mode === "signin" && (
-          <button
-            type="button"
-            onClick={() => setPinLogin(!pinLogin)}
-            className="flex items-center justify-center gap-2 border py-3.5 rounded-[10px] border-[#E6E6E6] hover:bg-gray-50 transition-colors"
-          >
-            <LockKeyhole />
-            <span className="text-[#1E1E1E] text-[17px] font-normal">
-              {pinLogin ? "Login with Email" : "Login with Pin"}
-            </span>
-          </button>
         )}
       </motion.form>
     </AnimatePresence>
