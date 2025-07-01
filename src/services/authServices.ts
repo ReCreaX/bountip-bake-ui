@@ -50,6 +50,9 @@ class AuthService {
       newPassword: data.password,
     });
   }
+  async googleOauth() {
+    return this.request.post("/auth/google-login", {});
+  }
 }
 
 const authService = new AuthService();

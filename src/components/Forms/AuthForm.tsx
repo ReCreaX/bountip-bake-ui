@@ -252,6 +252,10 @@ const AuthForm = ({ mode }: Props) => {
   ): errors is Partial<Record<keyof SignupFormValues, { message: string }>> =>
     mode === "signup";
 
+    const handleGoogleOauth = async () => {
+     const response = await authService.googleOauth()
+     console.log(response)
+    }
   return (
     <AnimatePresence mode="wait">
       <motion.form
@@ -493,6 +497,7 @@ const AuthForm = ({ mode }: Props) => {
             <button
               type="button"
               className="flex items-center justify-center gap-2 border py-3.5 rounded-[10px] border-[#E6E6E6] hover:bg-gray-50 transition-colors"
+              onClick={handleGoogleOauth}
             >
               <Image src={AssetsFiles.GoogleIcon} alt="Google Icon" />
               <span className="text-[#1E1E1E] text-[17px] font-normal">
@@ -503,9 +508,7 @@ const AuthForm = ({ mode }: Props) => {
             </button>
           </>
         )}
-        {mode === "signin" ? (
-          <div className=""></div>
-        ) : (
+        {mode === "signup" ? (
           <div className="">
             <p className="text-sm text-gray-500 text-center">
               Already have an account?{" "}
@@ -514,6 +517,18 @@ const AuthForm = ({ mode }: Props) => {
                 className="text-[#15BA5C] font-semibold hover:underline"
               >
                 Sign In
+              </Link>
+            </p>
+          </div>
+        ) : (
+          <div className="">
+            <p className="text-sm text-gray-500 text-center">
+              Don’t have an account?
+              <Link
+                href="/auth?signup"
+                className="text-[#15BA5C] font-semibold hover:underline"
+              >
+                Sign up
               </Link>
             </p>
           </div>
