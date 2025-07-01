@@ -19,13 +19,15 @@ import { businessService } from "@/services/businessService";
 import { BusinessAndOutlet, BusinessResponse } from "@/types/businessTypes";
 import { COOKIE_NAMES } from "@/utils/cookiesUtils";
 import { ReceiptCustomizationModal } from "@/components/Modals/Settings/components/ReceiptCustomizationModal";
+import { useSelectedOutlet } from "@/hooks/useSelectedOutlet";
 
 const SettingsPage: React.FC = () => {
-  const [{ businessId, outletId }, setBusinessOutlet] =
+  const [{ businessId,  }, setBusinessOutlet] =
     useState<BusinessAndOutlet>({
       businessId: "",
       outletId: "",
     });
+    const outletId= useSelectedOutlet()?.outlet.id;
   const [activeModal, setActiveModal] = useState<string | null>(null);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -70,8 +72,6 @@ const SettingsPage: React.FC = () => {
     { id: "3", name: "Others", type: "others", enabled: true },
   ]);
 
- 
-
   const handleSettingClick = (id: string) => {
     setActiveModal(id);
   };
@@ -94,8 +94,11 @@ const SettingsPage: React.FC = () => {
             <div
               key={item.id}
               onClick={() => handleSettingClick(item.id)}
-              className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-lg transition-shadow cursor-pointer"
+              className="relative overflow-hidden bg-white rounded-lg border border-gray-200 p-6 hover:shadow-lg transition-shadow cursor-pointer"
             >
+              <div className="absolute -top-14 right-0 h-[100px] w-[100px] rounded-full border border-[#15BA5C80]" />
+              <div className="absolute -top-7 -right-12 h-[100px] w-[100px] rounded-full border border-[#15BA5C80]" />
+
               <div className="flex items-start justify-between mb-4">
                 <div className={`p-3 rounded-full ${item.color}`}>
                   <Image
@@ -106,12 +109,13 @@ const SettingsPage: React.FC = () => {
                     className="object-contain"
                   />
                 </div>
-                <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
               </div>
+
               <div className="flex items-center justify-between mb-2">
                 <h3 className="font-semibold text-gray-900">{item.title}</h3>
-                <ChevronRight className="h-[14px]" />{" "}
+                <ChevronRight className="h-[14px]" />
               </div>
+
               <p className="text-sm text-[#737373]">{item.description}</p>
             </div>
           ))}
@@ -121,7 +125,7 @@ const SettingsPage: React.FC = () => {
       <BusinessDetailsModal
         isOpen={activeModal === "business-info"}
         onClose={() => setActiveModal(null)}
-        outletId={outletId}
+        outletId={outletId as number}
       />
 
       <PaymentMethodsModal
@@ -151,7 +155,6 @@ const SettingsPage: React.FC = () => {
       <LabellingSettingsModal
         isOpen={activeModal === "labelling-settings"}
         onClose={() => setActiveModal(null)}
-
       />
 
       <InventoryHubModal
@@ -171,7 +174,7 @@ const SettingsPage: React.FC = () => {
         onClose={() => setActiveModal(null)}
         businessId={businessId}
         outletsData={outletsData}
-        outletId={outletId}
+        outletId={outletId as number}
       />
       <ReceiptCustomizationModal
         isOpen={activeModal === "receipt-customization"}

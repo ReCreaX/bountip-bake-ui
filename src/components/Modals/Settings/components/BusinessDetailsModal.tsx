@@ -26,7 +26,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({
 }) => {
   
   const [details, setDetails] = useState<BusinessDetailsType>({
-    name: "Jacob Jones",
+    name: "",
     email: "business@example.com",
     phone: "+2348062236427",
     country: "Nigeria",
