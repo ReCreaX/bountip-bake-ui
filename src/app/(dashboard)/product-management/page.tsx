@@ -2,12 +2,14 @@
 import AssetsFiles from "@/assets";
 import { Switch } from "@/components/Modals/Settings/ui/Switch";
 import BulkUploadHistory from "@/components/ProductionManagement/BulkUploadHistory";
+import CreateProductModals from "@/components/ProductionManagement/CreateProductModals";
 //import CreateProductModals from "@/components/ProductionManagement/CreateProductModals";
 import EditProductModals from "@/components/ProductionManagement/EditProductModal";
 import ProductCatalog from "@/components/ProductionManagement/ProductCatalog";
 import ProductCatalogGrid from "@/components/ProductionManagement/ProductCatalogGrid";
 import ProductFilters from "@/components/ProductionManagement/ProductFilters";
 import UploadCsvModal from "@/components/ProductionManagement/UploadCsvModal";
+import { useProductManagementStore } from "@/stores/useProductManagementStore";
 import {
   Clock3,
   CloudUpload,
@@ -32,6 +34,7 @@ const ProductionManagement = () => {
 
   const [showCreateProductModal, setShowCreateProductModal] =
     useState<boolean>(false);
+  const { productClicked } = useProductManagementStore();
 
   return (
     <section className="mx-3.5 my-[20px] ">
@@ -196,21 +199,17 @@ const ProductionManagement = () => {
               <ProductCatalogGrid hideImages={hideImages} />
             )}
           </div>
-          {/* Create and Edit Product Modal */}
+
+          {productClicked && (
+            <EditProductModals isOpen={productClicked} size="md" />
+          )}
           {showCreateProductModal && (
-            <EditProductModals
+            <CreateProductModals
               onClose={() => setShowCreateProductModal(false)}
               isOpen={showCreateProductModal}
-              size="md" // You can adjust the size as needed
+              size="md"
             />
           )}
-          {/* {showCreateProductModal && (
-          <CreateProductModals
-            onClose={() => setShowCreateProductModal(false)}
-            isOpen={showCreateProductModal}
-            size="md" // You can adjust the size as needed
-          />
-        )} */}
           <UploadCsvModal
             isOpen={showUploadCSV}
             onClose={() => setshowUploadCSV(false)}

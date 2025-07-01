@@ -17,7 +17,6 @@ class ProductManagementService {
       | "priceTierId"
       | "allergenList"
       | "logoUrl"
-      | "isMainLocation"
     >
   ) {
     return this.request.post(
@@ -34,7 +33,6 @@ class ProductManagementService {
           allergies: data.allergenList?.allergies,
         },
         logoUrl: data.logoUrl,
-        isMainLocation: data.isMainLocation,
       },
       COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS
     );
@@ -65,6 +63,16 @@ class ProductManagementService {
 
     return this.request.get(
       `/outlets/${outletId}/products${queryString}`,
+      COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS
+    );
+  }
+
+  async deleteProduct (
+    outletId: number,
+    productId: number
+  ) {
+    return this.request.delete(
+      `/outlets/${outletId}/products/${productId}`,
       COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS
     );
   }

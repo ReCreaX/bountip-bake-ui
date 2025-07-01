@@ -239,7 +239,6 @@ const CreateProductModals: React.FC<CreateProductModalsProps> = ({
       logoUrl: formData.imageUrl || "",
       outletId: selectedOutletId ?? 1,
       isActive: true,
-      isMainLocation: true,
       logoHash: null,
     };
 

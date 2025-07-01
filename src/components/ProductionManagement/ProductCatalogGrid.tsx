@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import productManagementService from "@/services/productManagementService";
 import { useSelectedOutlet } from "@/hooks/useSelectedOutlet";
 import EmptyProduct from "./EmptyProduct";
+import { useProductManagementStore } from "@/stores/useProductManagementStore";
 
 interface ProductResponse {
   status: boolean;
@@ -35,6 +36,8 @@ const ProductCatalogGrid: React.FC<ProductCatalogProps> = ({ hideImages }) => {
 
   const outlet = useSelectedOutlet();
   const outletId = outlet?.outlet.id;
+    const {setProductClicked, setSelectedProduct} = useProductManagementStore()
+  
 
   const fetchProducts = async (page: number) => {
     if (!outletId) return;
@@ -95,6 +98,10 @@ const ProductCatalogGrid: React.FC<ProductCatalogProps> = ({ hideImages }) => {
       );
     }
   };
+  const handleProductClick=(product:Product)=>{
+    setProductClicked(true)
+    setSelectedProduct(product)
+  }
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -129,6 +136,7 @@ const ProductCatalogGrid: React.FC<ProductCatalogProps> = ({ hideImages }) => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05, duration: 0.3 }}
+                onClick={()=> handleProductClick(product)}
               >
                 <AnimatePresence mode="wait">
                   {hideImages ? (
@@ -150,7 +158,7 @@ const ProductCatalogGrid: React.FC<ProductCatalogProps> = ({ hideImages }) => {
                       className="mb-3"
                     >
                       <Image
-                        src={product.logoUrl}
+                        src={product.logoUrl as string}
                         alt={product.name}
                         width={400}
                         height={400}

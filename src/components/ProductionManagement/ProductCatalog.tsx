@@ -7,6 +7,7 @@ import { Product } from "@/types/product";
 import productManagementService from "@/services/productManagementService";
 import { useSelectedOutlet } from "@/hooks/useSelectedOutlet";
 import EmptyProduct from "./EmptyProduct";
+import { useProductManagementStore } from "@/stores/useProductManagementStore";
 
 interface ProductResponse {
   status: boolean;
@@ -20,6 +21,7 @@ interface ProductResponse {
 }
 
 const ProductCatalog: React.FC = () => {
+  const {setProductClicked, setSelectedProduct} = useProductManagementStore()
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,6 +33,10 @@ const ProductCatalog: React.FC = () => {
 
   const outlet = useSelectedOutlet();
   const outletId = outlet?.outlet.id;
+  const handleProductClick=(product:Product)=>{
+    setProductClicked(true)
+    setSelectedProduct(product)
+  }
 
   const fetchProducts = async (page: number) => {
     if (!outletId) return;
@@ -170,12 +176,12 @@ const ProductCatalog: React.FC = () => {
               </tr>
             ) : (
               products.map((product) => (
-                <tr key={product.id} className="hover:bg-gray-50">
+                <tr onClick={()=> handleProductClick(product)} key={product.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-3">
                       <Image
                         className="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center text-lg"
-                        src={product.logoUrl}
+                        src={product.logoUrl as string}
                         alt={product.name}
                         width={40}
                         height={40}

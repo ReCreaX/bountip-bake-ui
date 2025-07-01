@@ -11,18 +11,27 @@ import { useModalStore } from "@/stores/useUIStore";
 import TooltipWrapper from "../ToolTip/TooltipWrapper";
 import { useSelectedOutlet } from "@/hooks/useSelectedOutlet";
 import { getRole } from "@/utils/getRolesType";
+import { COOKIE_NAMES, removeCookie } from "@/utils/cookiesUtils";
+import { useRouter } from "next/navigation";
+
 
 const DashboardSidebarLayout = () => {
   const { showFullDashboardSidebar } = useModalStore();
   const pathname = usePathname();
   const activeId = pathname.split("/")[1] || "dashboard";
   const [settingsOpen, setSettingsOpen] = useState(false);
+   const router = useRouter();
   // const user = getCookie<UserType>("bountipLoginUser");
   // const user = getCookie<UserType>(COOKIE_NAMES.BOUNTIP_LOGIN_USER);
   const outlets = useSelectedOutlet()
    if(!outlets) return;
 
   const sidebarWidth = showFullDashboardSidebar ? "w-[300px]" : "w-20";
+  const handleLogOut = () => {
+      removeCookie(COOKIE_NAMES.BOUNTIP_LOGIN_USER);
+      removeCookie(COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS);
+      router.push("/auth?signin");
+    };
 
   return (
     <section
@@ -129,7 +138,7 @@ const DashboardSidebarLayout = () => {
           </div>
 
           {showFullDashboardSidebar ? (
-            <button className="flex items-center gap-2 text-red-500 text-sm py-3.5 cursor-pointer">
+            <button onClick={handleLogOut} className="flex items-center gap-2 text-red-500 text-sm py-3.5 cursor-pointer hover:bg-red-50 hover:rounded-[10px] px-1.5">
               <LogOut className="w-5 h-5" />
               <span>Log Out</span>
             </button>

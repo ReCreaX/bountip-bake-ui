@@ -98,6 +98,12 @@ const AuthForm = ({ mode }: Props) => {
 
   const strength = getStrength(password);
   const { label } = getStrengthLabel(strength);
+  const [isChecked, setIsChecked] = useState(false);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newChecked = e.target.checked;
+    setIsChecked(newChecked);
+    // onChange?.(newChecked);
+  };
 
   const handleSignup = async (data: SignupFormValues) => {
     const response = (await authService.signup(data)) as AuthResponse;
@@ -296,7 +302,7 @@ const AuthForm = ({ mode }: Props) => {
             <span className="h-[30px] w-0.5 bg-[#E6E6E6] mx-1.5"></span>
             <div className="flex flex-col w-full">
               <label className="text-sm text-[#898989] mb-1">
-                Representative Full Name
+                Representative Fullname
               </label>
               <input
                 type="text"
@@ -318,7 +324,9 @@ const AuthForm = ({ mode }: Props) => {
             <Mail className="text-[#1E1E1E]" />
             <span className="h-[30px] w-0.5 bg-[#E6E6E6] mx-1.5"></span>
             <div className="flex flex-col w-full">
-              <label className="text-sm text-[#898989] mb-1">Email</label>
+              <label className="text-sm text-[#898989] mb-1">
+                Email Address
+              </label>
               <input
                 type="email"
                 placeholder="Enter Email"
@@ -339,7 +347,9 @@ const AuthForm = ({ mode }: Props) => {
             <Image src={AssetsFiles.PasswordIcon} alt="Password Icon" />
             <span className="h-[30px] w-0.5 bg-[#E6E6E6] mx-1.5"></span>
             <div className="flex flex-col w-full relative">
-              <label className="text-sm text-[#898989] mb-1">Password</label>
+              <label className="text-sm text-[#898989] mb-1">
+                {mode === "signin" ? "Password" : "Create Password"}
+              </label>
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder={
@@ -403,7 +413,51 @@ const AuthForm = ({ mode }: Props) => {
 
         {/* Forgot Password */}
         {!pinLogin && mode === "signin" && (
-          <div className="flex justify-end">
+          <div className="flex justify-between items-center">
+            <div className={`flex items-center space-x-2 `}>
+              <div className="relative">
+                <input
+                  type="checkbox"
+                  id="remember-me"
+                  checked={isChecked}
+                  onChange={handleChange}
+                  className="sr-only"
+                />
+                <label
+                  htmlFor="remember-me"
+                  className="flex items-center cursor-pointer"
+                >
+                  <div
+                    className={`
+            w-4 h-4 border-2 rounded-sm flex items-center justify-center transition-all duration-200
+            ${
+              isChecked
+                ? "bg-green-500 border-green-500"
+                : "bg-white border-gray-300 hover:border-gray-400"
+            }
+          `}
+                  >
+                    {isChecked && (
+                      <svg
+                        className="w-3 h-3 text-white"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    )}
+                  </div>
+                  <span className="ml-2 text-sm text-gray-700 select-none">
+                    Remember Me
+                  </span>
+                </label>
+              </div>
+            </div>
+
             <Link
               href="/reset-password"
               className="text-sm text-[#15BA5C] hover:underline"
@@ -414,18 +468,7 @@ const AuthForm = ({ mode }: Props) => {
         )}
 
         {/* Toggle Email / PIN login */}
-        {mode === "signin" && (
-          <button
-            type="button"
-            onClick={() => setPinLogin(!pinLogin)}
-            className="flex items-center justify-center gap-2 border py-3.5 rounded-[10px] border-[#E6E6E6] hover:bg-gray-50 transition-colors"
-          >
-            <LockKeyhole />
-            <span className="text-[#1E1E1E] text-[17px] font-normal">
-              {pinLogin ? "Login with Email" : "Login with Pin"}
-            </span>
-          </button>
-        )}
+
         {!pinLogin && (
           <>
             <div className="flex items-center w-full my-4">
@@ -435,6 +478,18 @@ const AuthForm = ({ mode }: Props) => {
               </span>
               <hr className="flex-grow border-t border-gray-300" />
             </div>
+            {mode === "signin" && (
+              <button
+                type="button"
+                onClick={() => setPinLogin(!pinLogin)}
+                className="flex items-center justify-center gap-2 border py-3.5 rounded-[10px] border-[#E6E6E6] hover:bg-gray-50 transition-colors"
+              >
+                <LockKeyhole />
+                <span className="text-[#1E1E1E] text-[17px] font-normal">
+                  {pinLogin ? "Login with Email" : "Login with Pin"}
+                </span>
+              </button>
+            )}
             <button
               type="button"
               className="flex items-center justify-center gap-2 border py-3.5 rounded-[10px] border-[#E6E6E6] hover:bg-gray-50 transition-colors"
@@ -447,6 +502,21 @@ const AuthForm = ({ mode }: Props) => {
               </span>
             </button>
           </>
+        )}
+        {mode === "signin" ? (
+          <div className=""></div>
+        ) : (
+          <div className="">
+            <p className="text-sm text-gray-500 text-center">
+              Already have an account?{" "}
+              <Link
+                href="/auth?signin"
+                className="text-[#15BA5C] font-semibold hover:underline"
+              >
+                Sign In
+              </Link>
+            </p>
+          </div>
         )}
       </motion.form>
     </AnimatePresence>
