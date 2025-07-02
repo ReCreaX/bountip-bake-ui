@@ -9,6 +9,7 @@ import ProductCatalog from "@/components/ProductionManagement/ProductCatalog";
 import ProductCatalogGrid from "@/components/ProductionManagement/ProductCatalogGrid";
 import ProductFilters from "@/components/ProductionManagement/ProductFilters";
 import UploadCsvModal from "@/components/ProductionManagement/UploadCsvModal";
+import { useSelectedOutlet } from "@/hooks/useSelectedOutlet";
 import { useProductManagementStore } from "@/stores/useProductManagementStore";
 import {
   Clock3,
@@ -31,11 +32,16 @@ const ProductionManagement = () => {
   const [showUploadCSV, setshowUploadCSV] = useState<boolean>(false);
   const [showBulkUploadHistory, setShowBulkUploadHistory] =
     useState<boolean>(false);
+    const [searchText, setSearchText] = useState<string>("")
 
   const [showCreateProductModal, setShowCreateProductModal] =
     useState<boolean>(false);
-  const { productClicked } = useProductManagementStore();
+  const { productClicked, fetchProducts } = useProductManagementStore();
+  const outletId = useSelectedOutlet()?.outlet.id
 
+  const handleSearchProduct =async () => {
+    await fetchProducts(outletId  as number, undefined, undefined, searchText);
+  }
   return (
     <section className="mx-3.5 my-[20px] ">
       {showBulkUploadHistory ? (
@@ -134,8 +140,10 @@ const ProductionManagement = () => {
                     name="searchProduct"
                     id="searchProduct"
                     className="outline-none border-none text-sm px-3.5"
+                    onChange={(e) =>setSearchText(e.target.value)}
                   />
                   <button
+                  onClick={handleSearchProduct}
                     className="bg-[#15BA5C] h-[38px] rounded-tr-[10px] rounded-br-[10px] px-2.5"
                     type="button"
                   >

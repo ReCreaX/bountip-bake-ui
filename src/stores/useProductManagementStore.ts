@@ -39,7 +39,7 @@ interface IProductManagementStore {
   productsPerPage: number;
 
   // Actions
-  fetchProducts: (outletId: number, page?: number, limit?: number) => Promise<void>;
+  fetchProducts: (outletId: number, page?: number, limit?: number, search?:string) => Promise<void>;
   deleteProduct: (outletId: number, productId: number) => Promise<boolean>;
   updateProductStatus: (productId: number, isActive: boolean) => void;
   addProduct: (product: Product) => void;
@@ -80,13 +80,14 @@ export const useProductManagementStore = create<IProductManagementStore>((set, g
   productsPerPage: 10,
 
   // Fetch Products
-  fetchProducts: async (outletId: number, page = 1, limit = 10) => {
+  fetchProducts: async (outletId: number, page = 1, limit = 10, search) => {
     set({ loading: true, error: null });
 
     try {
       const response = (await productManagementService.fetchProducts(outletId, {
         page,
         limit,
+        search: search || "",
       })) as ProductResponse;
 
       if (response.status && response.data) {
