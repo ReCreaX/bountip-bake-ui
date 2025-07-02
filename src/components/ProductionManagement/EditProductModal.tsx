@@ -466,7 +466,7 @@ const EditProductModals: React.FC<EditProductModalsProps> = ({
                   <DropdownSelector
                     searchPlaceholder="Search Product Category"
                     items={categories}
-                    placeholder="Select Category"
+                    placeholder={formData.category || "Select a category"}
                     onSelect={(item) => handleInputChange("category", item)}
                   />
                 </div>
@@ -543,7 +543,7 @@ const EditProductModals: React.FC<EditProductModalsProps> = ({
                   <DropdownSelector
                     searchPlaceholder="Search Preparation Area"
                     items={preparationArea}
-                    placeholder="Select a preparation area"
+                    placeholder={formData.preparationArea || "Select a preparation area"}
                     onSelect={(item) =>
                       handleInputChange("preparationArea", item)
                     }
@@ -672,7 +672,7 @@ const EditProductModals: React.FC<EditProductModalsProps> = ({
                   <DropdownSelector
                     searchPlaceholder="Search packaging method"
                     items={packagingMethod}
-                    placeholder="Select a packaging method"
+                    placeholder={formData.packagingMethod || "Select a packaging method"}
                     onSelect={(item) =>
                       handleInputChange("packagingMethod", item)
                     }
@@ -770,7 +770,8 @@ const EditProductModals: React.FC<EditProductModalsProps> = ({
                             {row.changedBy}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {row.role || "Admin"}
+                            Admin
+                            {/* {row.role || "Admin"} */}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {formatDate(row.changedAt)}
