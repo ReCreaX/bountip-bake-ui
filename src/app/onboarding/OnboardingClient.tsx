@@ -12,7 +12,7 @@ const OnboardingClient = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const currentStep = searchParams.get("step") || "pin";
+  const currentStep = searchParams.get("step") || "business";
 
   const handleNextStep = useCallback(() => {
     const params = new URLSearchParams(searchParams.toString());
@@ -47,7 +47,7 @@ const OnboardingClient = () => {
         <div className="w-[80%]">
           <SplitedProgressBar
             length={2}
-            filled={isBusinessStep ? 2 : 1}
+            filled={isPinStep ? 2 : 1}
             color="#15BA5C"
           />
           {isPinStep && <SetUpPin onNext={handleNextStep} />}
