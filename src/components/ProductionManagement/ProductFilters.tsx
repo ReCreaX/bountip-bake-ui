@@ -130,7 +130,7 @@ const ProductFilters = () => {
 
       <button
         onClick={applyFilters}
-        className="w-full bg-green-600 text-white rounded-md py-2 font-medium text-sm hover:bg-green-700 transition"
+        className=" mt-3.5 w-full bg-green-600 text-white rounded-md py-2 font-medium text-sm hover:bg-green-700 transition"
       >
         Apply Filters
       </button>

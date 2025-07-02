@@ -193,10 +193,7 @@ function OtpInput({ onNext }: { onNext: () => void }) {
       { token: fullOtp },
       { expiresInMinutes: 30 }
     );
-    toast.success("OTP verified successfully", {
-      duration: 4000, 
-      position: "bottom-right",
-    });
+    
     onNext();
   };
 
@@ -330,6 +327,11 @@ function CreateNewPassword({ onNext }: { onNext: () => void }) {
       removeCookie(COOKIE_NAMES.RESET_USER_EMAIL);
       // removeCookie("tokenUserEmail");
       removeCookie(COOKIE_NAMES.TOKEN_USER_EMAIL);
+    } else{
+      toast.error(response.message || "Failed to reset password", {
+        duration: 4000,
+        position: "bottom-right",
+      });
     }
   };
 

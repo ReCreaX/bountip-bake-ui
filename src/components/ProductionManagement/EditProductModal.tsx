@@ -109,7 +109,6 @@ const EditProductModals: React.FC<EditProductModalsProps> = ({
   const {} = useProductManagementStore();
 
   const [activeTab, setActiveTab] = useState<"basic" | "price">("basic");
-  //const { selectedOutletId } = useBusinessStore();
   const outlet = useSelectedOutlet();
   const outletId = outlet?.outlet.id;
   console.log(outletId);
@@ -219,9 +218,10 @@ const EditProductModals: React.FC<EditProductModalsProps> = ({
       fetchProductPriceHistory(selectedProduct.id);
     }
     if (selectedProduct) {
+      console.log(selectedProduct);
       setFormData({
         productName: selectedProduct.name,
-        category: selectedProduct.category || "",
+        category: selectedProduct.category ,
         sellingPrice: selectedProduct.price?.toString() || "",
         hasPriceTiers: !!selectedProduct.priceTierId,
         priceTiers: selectedProduct.priceTierId
