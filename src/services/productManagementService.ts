@@ -17,6 +17,10 @@ class ProductManagementService {
       | "priceTierId"
       | "allergenList"
       | "logoUrl"
+      | "weightScale"
+      | "weight"
+      | "leadTime"
+      | "packagingArea"
     >
   ) {
     return this.request.post(
@@ -33,6 +37,10 @@ class ProductManagementService {
           allergies: data.allergenList?.allergies,
         },
         logoUrl: data.logoUrl,
+        weightScale: data.weightScale,
+        weight: data.weight,
+        leadTime: data.leadTime,
+        packagingArea: data.packagingArea,
       },
       COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS
     );
@@ -67,15 +75,79 @@ class ProductManagementService {
     );
   }
 
-  async deleteProduct (
-    outletId: number,
-    productId: number
-  ) {
+  async deleteProduct(outletId: number, productId: number) {
     return this.request.delete(
       `/outlets/${outletId}/products/${productId}`,
       COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS
     );
   }
+
+  async updateProduct(
+    outletId: number,
+    productId: number,
+    data: Pick<
+      Product,
+      | "name"
+      | "description"
+      | "price"
+      | "category"
+      | "isActive"
+      | "preparationArea"
+      | "priceTierId"
+      | "allergenList"
+      | "logoUrl"
+      | "weightScale"
+      | "weight"
+      | "leadTime"
+      | "packagingArea"
+    >
+  ) {
+    return this.request.patch(
+      `/outlets/${outletId}/products/${productId}`,
+      {
+        name: data.name,
+        description: data.description,
+        price: data.price,
+        category: data.category,
+        isActive: data.isActive,
+        preparationArea: data.preparationArea,
+        priceTierId: data.priceTierId,
+        allergenList: {
+          allergies: data.allergenList?.allergies,
+        },
+        logoUrl: data.logoUrl,
+        weightScale: data.weightScale,
+        weight: data.weight,
+        leadTime: data.leadTime,
+        packagingArea: data.packagingArea,
+      },
+      COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS
+    );
+  }
+
+  async fetchProductPriceHistory(
+    outletId:number,
+    productId: number,
+    options?: {
+      page?: number;
+      limit?: number;
+    }
+  ) {
+    const params = new URLSearchParams();
+  
+    if (options?.page !== undefined)
+      params.append("page", options.page.toString());
+    if (options?.limit !== undefined)
+      params.append("limit", options.limit.toString());
+  
+    const queryString = params.toString() ? `?${params.toString()}` : "";
+  
+    return this.request.get(
+      `/outlets/${outletId}/products/${productId}/history${queryString}`,
+      COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS
+    );
+  }
+  
 }
 
 const productManagementService = new ProductManagementService();

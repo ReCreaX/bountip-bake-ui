@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+//@ts-nocheck
 "use client";
 import { Clock3, Plus, Tag, Trash, Trash2, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -5,13 +7,15 @@ import { Switch } from "../Modals/Settings/ui/Switch";
 import { DropdownSelector } from "./ui/DropdownSelector";
 import FileUploadComponent from "../Upload/FileUploadComponent";
 import getWidthClass from "@/utils/getWidthClass";
-import { useBusinessStore } from "@/stores/useBusinessStore";
 import productManagementService from "@/services/productManagementService";
 import { ApiResponseType } from "@/types/httpTypes";
 import Image from "next/image";
 import AssetsFiles from "@/assets";
 import { useProductManagementStore } from "@/stores/useProductManagementStore";
 import { toast } from "sonner";
+import { useSelectedOutlet } from "@/hooks/useSelectedOutlet";
+// import Pagination from "../Pagination/Pagination";
+import { formatDate } from "@/utils/getTimers";
 
 interface EditProductModalsProps {
   size?: "sm" | "md" | "lg" | "xl" | "full" | number;
@@ -72,63 +76,44 @@ interface Allergen {
   isSelected: boolean;
 }
 
-interface AdminData {
-  name: string;
-  role: string;
-  dateTime: string;
-  previousPrice: string;
-  newSellingPrice: string;
-}
+
 
 const tabs = [
   { id: "basic", label: "Basic Information" },
   { id: "price", label: "Price History" },
 ] as const;
 
-const data: AdminData[] = [
-  {
-    name: "Leslie Alexander",
-    role: "Admin",
-    dateTime: "24/06/2025 14:05 AM",
-    previousPrice: "£85",
-    newSellingPrice: "£100",
-  },
-  {
-    name: "Albert Flores",
-    role: "Admin",
-    dateTime: "24/06/2025 14:05 AM",
-    previousPrice: "£85",
-    newSellingPrice: "£100",
-  },
-  {
-    name: "Theresa Webb",
-    role: "Admin",
-    dateTime: "24/06/2025 14:05 AM",
-    previousPrice: "£85",
-    newSellingPrice: "£100",
-  },
-  {
-    name: "Esther Howard",
-    role: "Admin",
-    dateTime: "24/06/2025 14:05 AM",
-    previousPrice: "£85",
-    newSellingPrice: "£100",
-  },
-];
 
 const EditProductModals: React.FC<EditProductModalsProps> = ({
   isOpen,
   size = "md",
 }) => {
-  console.log("SHould show");
   const [isVisible, setIsVisible] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
-  const [showDeleteProductModal, setShowDeletProductModal] = useState(false);
-  const { setProductClicked, selectedProduct } = useProductManagementStore();
-  const [activeTab, setActiveTab] = useState<"basic" | "price">("basic");
+  const [showDeleteProductModal, setShowDeleteProductModal] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const { selectedOutletId } = useBusinessStore();
+  // Zustand store
+  const {
+    setProductClicked,
+    selectedProduct,
+    deleteProduct,
+    updateProduct,
+    addProduct,
+    fetchProductPriceHistory,
+
+    selectedProductPriceHistory,
+  } = useProductManagementStore();
+  const {} = useProductManagementStore();
+
+  const [activeTab, setActiveTab] = useState<"basic" | "price">("basic");
+  //const { selectedOutletId } = useBusinessStore();
+  const outlet = useSelectedOutlet();
+  const outletId = outlet?.outlet.id;
+  console.log(outletId);
+
   // Form data state
   const [formData, setFormData] = useState<ProductFormData>({
     productName: "",
@@ -228,7 +213,11 @@ const EditProductModals: React.FC<EditProductModalsProps> = ({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
   useEffect(() => {
+    if (selectedProduct?.id) {
+      fetchProductPriceHistory(selectedProduct.id);
+    }
     if (selectedProduct) {
       setFormData({
         productName: selectedProduct.name,
@@ -241,7 +230,7 @@ const EditProductModals: React.FC<EditProductModalsProps> = ({
                 id: "retail",
                 label: "Retail Price Tier",
                 price: "£40",
-                checked: true,
+                checked: selectedProduct.priceTierId === 1,
               },
               {
                 id: "wholesale",
@@ -274,7 +263,7 @@ const EditProductModals: React.FC<EditProductModalsProps> = ({
         imageUrl: selectedProduct.logoUrl as string,
       });
     }
-  }, [selectedProduct]);
+  }, [fetchProductPriceHistory, selectedProduct]);
 
   if (!isOpen && !isVisible) return null;
 
@@ -301,18 +290,18 @@ const EditProductModals: React.FC<EditProductModalsProps> = ({
     });
 
     if (emptyFields.length > 0) {
-      alert(`Please fill all required fields: ${emptyFields.join(", ")}`);
+      toast.error(`Please fill all required fields: ${emptyFields.join(", ")}`);
       return;
     }
 
     // Optional: Additional numeric validation
     if (isNaN(parseFloat(formData.sellingPrice))) {
-      alert("Selling price must be a valid number.");
+      toast.error("Selling price must be a valid number.");
       return;
     }
 
     if (isNaN(parseFloat(formData.weight))) {
-      alert("Weight must be a valid number.");
+      toast.error("Weight must be a valid number.");
       return;
     }
 
@@ -332,37 +321,82 @@ const EditProductModals: React.FC<EditProductModalsProps> = ({
           }
         : null,
       logoUrl: formData.imageUrl || "",
-      outletId: selectedOutletId ?? 1,
+      outletId: outletId,
       isActive: true,
       isMainLocation: true,
       logoHash: null,
     };
 
-    // SUBMIT
-    const response = (await productManagementService.createProduct(
-      selectedOutletId as number,
-      productData
-    )) as ApiResponseType;
+    try {
+      if (selectedProduct) {
+        // UPDATE existing product
+        const updatedProductData = {
+          ...selectedProduct,
+          ...productData,
+          id: selectedProduct.id,
+        };
 
-    if (response.status) {
-      console.log("Product created successfully:", response);
-      setProductClicked(false);
-    } else {
-      console.log("Error creating product:", response);
+        // Call API to update product
+        const response = (await productManagementService.updateProduct(
+          outletId as number,
+          selectedProduct.id,
+          productData
+        )) as ApiResponseType;
+
+        if (response.status) {
+          updateProduct(updatedProductData);
+          toast.success("Product updated successfully");
+          setProductClicked(false);
+        } else {
+          toast.error("Error updating product");
+        }
+      } else {
+        // CREATE new product
+        const response = (await productManagementService.createProduct(
+          outletId as number,
+          productData
+        )) as ApiResponseType;
+
+        if (response.status) {
+          // Add the new product to store (assuming API returns the created product)
+          const newProduct = {
+            ...productData,
+            id: response.data?.id || Date.now(), // Fallback ID
+          };
+          addProduct(newProduct);
+          toast.success("Product created successfully");
+          setProductClicked(false);
+        } else {
+          toast.error("Error creating product");
+        }
+      }
+    } catch (error) {
+      console.error("Error saving product:", error);
+      toast.error("An error occurred while saving the product");
     }
   };
 
   const handleDeleteProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedProduct) return;
-    const response = (await productManagementService.deleteProduct(
-      selectedOutletId as number,
-      selectedProduct.id
-    )) as ApiResponseType;
-    if(response.status){
-      toast.success("Product deleted successfully");
-      setShowDeletProductModal(false);
-      setProductClicked(false);
+    if (!selectedProduct || !outletId) return;
+
+    setIsDeleting(true);
+
+    try {
+      const success = await deleteProduct(outletId, selectedProduct.id);
+
+      if (success) {
+        toast.success("Product deleted successfully");
+        setShowDeleteProductModal(false);
+        setProductClicked(false);
+      } else {
+        toast.error("Failed to delete product");
+      }
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      toast.error("An error occurred while deleting the product");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -693,7 +727,7 @@ const EditProductModals: React.FC<EditProductModalsProps> = ({
                   <button
                     className="w-full flex items-center justify-center gap-2 text-[#FF5247] border border-[#FF5247] hover:bg-[#FF5247]  hover:text-white text-[14px] font-medium py-2.5 rounded-[10px]"
                     type="button"
-                    onClick={() => setShowDeletProductModal(true)}
+                    onClick={() => setShowDeleteProductModal(true)}
                   >
                     <Trash className="h-[16px]" />
                     <span className="">Delete Product</span>
@@ -752,22 +786,22 @@ const EditProductModals: React.FC<EditProductModalsProps> = ({
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {data.map((row, index) => (
+                      {selectedProductPriceHistory?.map((row, index) => (
                         <tr key={index} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {row.name}
+                            {row.changedBy}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {row.role}
+                            {row.role || "Admin"}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {row.dateTime}
+                            {formatDate(row.changedAt)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {row.previousPrice}
+                            £{row.oldPrice}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {row.newSellingPrice}
+                            £{row.newPrice}
                           </td>
                         </tr>
                       ))}
@@ -789,7 +823,9 @@ const EditProductModals: React.FC<EditProductModalsProps> = ({
             </div>
 
             <div className="px-6 text-[#1C1B20] w-full mt-6">
-              <h3 className="text-center font-medium text-[18px]">Delete Price History</h3>
+              <h3 className="text-center font-medium text-[18px]">
+                Delete Price History
+              </h3>
               <p className="text-center font-normal text-[14px] mt-2">
                 Are you sure you want to delete this price history?
               </p>
@@ -797,12 +833,12 @@ const EditProductModals: React.FC<EditProductModalsProps> = ({
                 <button
                   className="bg-[#FF5247] rounded-[14px] text-white py-[10px]"
                   type="button"
-                  onClick={(e)=>handleDeleteProduct(e)}
+                  onClick={(e) => handleDeleteProduct(e)}
                 >
                   Yes, Delete
                 </button>
                 <button
-                  onClick={() => setShowDeletProductModal(false)}
+                  onClick={() => setShowDeleteProductModal(false)}
                   className="border text-[#FF5247] rounded-[14px] border-[#FF0000] py-[10px]"
                   type="button"
                 >

@@ -66,7 +66,7 @@ const AuthPageClient = () => {
       <section className="flex-1 flex items-center justify-center my-12">
         <section className="flex items-center justify-center flex-col gap-3.5 w-[450px] ">
           <Image src={AssetsFiles.LogoTwo} alt="Logo" />
-          <h3 className="text-[#1E1E1E] font-bold text-[45px]">Welcome Back</h3>
+          <h3 className="text-[#1E1E1E] font-bold text-[45px] mt-5">Welcome Back</h3>
           <p className="text-[#1E1E1E] text-[25px] font-light text-center">
             Welcome back, Please Enter your details
           </p>

@@ -10,6 +10,7 @@ export interface ProductHistory {
   changedAt: Date;
   product: Product;
   productId: number;
+  role:string
 }
 
 export interface Product {

@@ -183,6 +183,7 @@ const AuthForm = ({ mode }: Props) => {
   };
 
   const handlePinLogin = async (pin: string) => {
+    console.log("Handling PIN login with pin:", pin);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const response: any = await authService.pinLogin({ pin });
 
@@ -224,14 +225,17 @@ const AuthForm = ({ mode }: Props) => {
 
   const onSubmit = async (data: FormValues) => {
     setIsLoading(true);
+    console.log("Submitting form with data:", data);
 
     try {
       if (mode === "signup") {
         await handleSignup(data as SignupFormValues);
         return;
       }
+      console.log(pinLogin, "PIN Login status");
 
       if (pinLogin) {
+        console.log(pinLogin);
         await handlePinLogin(pin);
 
         return;
@@ -384,6 +388,7 @@ const AuthForm = ({ mode }: Props) => {
 
         {/* Submit Button */}
         <button
+        onClick={handleSubmit(onSubmit)}
           className="bg-[#15BA5C] text-white font-bold text-xl py-3.5 rounded-[10px] hover:bg-[#13a551]"
           type="submit"
         >
@@ -473,15 +478,17 @@ const AuthForm = ({ mode }: Props) => {
 
         {/* Toggle Email / PIN login */}
 
-        {!pinLogin && (
+        
           <>
+          {!pinLogin && 
             <div className="flex items-center w-full my-4">
               <hr className="flex-grow border-t border-gray-300" />
               <span className="mx-4 text-sm text-gray-500">
                 Or Continue With
               </span>
               <hr className="flex-grow border-t border-gray-300" />
-            </div>
+            </div> 
+            }
             {mode === "signin" && (
               <button
                 type="button"
@@ -494,6 +501,8 @@ const AuthForm = ({ mode }: Props) => {
                 </span>
               </button>
             )}
+             {!pinLogin && 
+            
             <button
               type="button"
               className="flex items-center justify-center gap-2 border py-3.5 rounded-[10px] border-[#E6E6E6] hover:bg-gray-50 transition-colors"
@@ -506,8 +515,9 @@ const AuthForm = ({ mode }: Props) => {
                   : "Login With Google"}
               </span>
             </button>
+             }
           </>
-        )}
+        
         {mode === "signup" ? (
           <div className="">
             <p className="text-sm text-gray-500 text-center">

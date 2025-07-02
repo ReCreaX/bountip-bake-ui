@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { Clock3, Plus, Tag, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Switch } from "../Modals/Settings/ui/Switch";
@@ -9,6 +9,7 @@ import { useBusinessStore } from "@/stores/useBusinessStore";
 import productManagementService from "@/services/productManagementService";
 import { ApiResponseType } from "@/types/httpTypes";
 import Image from "next/image";
+import { ConvertTimeToSeconds } from "@/utils/getTimers";
 
 interface CreateProductModalsProps {
   onClose: () => void;
@@ -91,7 +92,7 @@ const CreateProductModals: React.FC<CreateProductModalsProps> = ({
         id: "retail",
         label: "Retail Price Tier",
         price: "£40",
-        checked: true,
+        checked: false,
       },
       {
         id: "wholesale",
@@ -104,9 +105,9 @@ const CreateProductModals: React.FC<CreateProductModalsProps> = ({
     preparationArea: "",
     hasAllergens: false,
     allergens: [
-      { id: "1", name: "Cereals", isSelected: true },
+      { id: "1", name: "Cereals", isSelected: false },
       { id: "2", name: "Crustaceans", isSelected: false },
-      { id: "3", name: "Eggs", isSelected: true },
+      { id: "3", name: "Eggs", isSelected: false },
       { id: "4", name: "Fish", isSelected: false },
       { id: "5", name: "Peanuts", isSelected: false },
       { id: "6", name: "Soybeans", isSelected: false },
@@ -219,16 +220,18 @@ const CreateProductModals: React.FC<CreateProductModalsProps> = ({
       alert("Weight must be a valid number.");
       return;
     }
+    console.log("Form data before submission:", formData);
+    console.log("Selected Outlet ID:", selectedOutletId);
 
     // CREATE PRODUCT OBJECT
     const productData = {
       name: formData.productName,
-      description: formData.description ,
+      description: formData.description,
       category: formData.category,
       price: parseFloat(formData.sellingPrice),
       preparationArea: formData.preparationArea,
       hasPriceTier: formData.hasPriceTiers,
-      priceTierId: formData.hasPriceTiers? 1:1 ,
+      priceTierId: formData.hasPriceTiers ? 1 : 1,
       allergenList: formData.hasAllergens
         ? {
             allergies: formData.allergens
@@ -240,7 +243,18 @@ const CreateProductModals: React.FC<CreateProductModalsProps> = ({
       outletId: selectedOutletId ?? 1,
       isActive: true,
       logoHash: null,
+      packagingArea: formData.packagingMethod,
+      weight: Number( formData.weight),
+      weightScale: formData.weightUnit,
+      leadTime: ConvertTimeToSeconds({
+        leadTimeHours: formData.leadTimeHours,
+        leadTimeMinutes: formData.leadTimeMinutes,
+        leadTimeSeconds: formData.leadTimeSeconds,
+      }),
     };
+    console.log("Selected Outlet ID:", selectedOutletId);
+    console.log("Product data to be submitted:", productData);
+    
 
     // SUBMIT
     const response = (await productManagementService.createProduct(
@@ -556,6 +570,13 @@ const CreateProductModals: React.FC<CreateProductModalsProps> = ({
 export default CreateProductModals;
 
 // Updated PricingTierSelector Component
+interface PricingTier {
+  id: string;
+  label: string;
+  price: string;
+  checked: boolean;
+}
+
 interface PricingTierSelectorProps {
   tiers: PricingTier[];
   onTiersChange: (tiers: PricingTier[]) => void;
@@ -566,9 +587,10 @@ const PricingTierSelector: React.FC<PricingTierSelectorProps> = ({
   onTiersChange,
 }) => {
   const handleTierChange = (id: string) => {
-    const updatedTiers = tiers.map((tier) =>
-      tier.id === id ? { ...tier, checked: !tier.checked } : tier
-    );
+    const updatedTiers = tiers.map((tier) => ({
+      ...tier,
+      checked: tier.id === id,
+    }));
     onTiersChange(updatedTiers);
   };
 

@@ -1,100 +1,70 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { ChevronsUpDown } from "lucide-react";
 import Image from "next/image";
 import { Switch } from "../Modals/Settings/ui/Switch";
 import Pagination from "../Pagination/Pagination";
 import { Product } from "@/types/product";
-import productManagementService from "@/services/productManagementService";
 import { useSelectedOutlet } from "@/hooks/useSelectedOutlet";
 import EmptyProduct from "./EmptyProduct";
 import { useProductManagementStore } from "@/stores/useProductManagementStore";
 
-interface ProductResponse {
-  status: boolean;
-  data?: {
-    data: Product[];
-    meta: {
-      totalPages: number;
-      total: number;
-    };
-  };
-}
-
 const ProductCatalog: React.FC = () => {
-  const {setProductClicked, setSelectedProduct} = useProductManagementStore()
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [totalPages, setTotalPages] = useState(5);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [totalProducts, setTotalProducts] = useState(0);
-  const productsPerPage = 10;
-
   const outlet = useSelectedOutlet();
   const outletId = outlet?.outlet.id;
-  const handleProductClick=(product:Product)=>{
-    setProductClicked(true)
-    setSelectedProduct(product)
-  }
 
-  const fetchProducts = async (page: number) => {
-    if (!outletId) return;
+  // Zustand store state and actions
+  const {
+    products,
+    loading,
+    error,
+    currentPage,
+    totalPages,
+    productsPerPage,
+    fetchProducts,
+    setProductClicked,
+    setSelectedProduct,
+    updateProductStatus,
+    setCurrentPage,
+    clearProducts,
+    resetError,
+  } = useProductManagementStore();
 
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = (await productManagementService.fetchProducts(outletId, {
-        page: page,
-        limit: productsPerPage,
-      })) as ProductResponse;
-
-      if (response.status && response.data) {
-        setProducts(response.data.data || []);
-        setTotalPages(response.data.meta.totalPages || 1);
-        setTotalProducts(response.data.meta.total || 0);
-      }
-    } catch (err) {
-      console.error("Error fetching products:", err);
-      setError("Failed to fetch products");
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Fetch products when outlet changes or page changes
   useEffect(() => {
-    fetchProducts(currentPage);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, outletId]);
+    if (outletId) {
+      fetchProducts(outletId, currentPage, productsPerPage);
+    } else {
+      clearProducts();
+    }
+  }, [outletId, currentPage, fetchProducts, clearProducts, productsPerPage]);
+
+  // Clear products when outlet changes
+  useEffect(() => {
+    return () => {
+      clearProducts();
+    };
+  }, [outletId, clearProducts]);
+
+  const handleProductClick = (product: Product) => {
+    setProductClicked(true);
+    setSelectedProduct(product);
+  };
 
   const toggleAvailability = async (id: number) => {
     const productToToggle = products.find((product) => product.id === id);
-    if (!productToToggle) return;
+    if (!productToToggle || !outletId) return;
 
-    setProducts((prev) =>
-      prev.map((product) =>
-        product.id === id
-          ? { ...product, isActive: !product.isActive }
-          : product
-      )
-    );
+    // Optimistically update UI
+    updateProductStatus(id, !productToToggle.isActive);
 
     try {
-      // Uncomment when API available
+      // Uncomment when API is available
       // await productManagementService.updateProductStatus(outletId, id, !productToToggle.isActive);
       console.log(`Toggling availability for product ${id}`);
     } catch (err) {
       console.error("Error updating product availability:", err);
-
-      // revert UI on failure
-      setProducts((prev) =>
-        prev.map((product) =>
-          product.id === id
-            ? { ...product, isActive: !product.isActive }
-            : product
-        )
-      );
+      // Revert on failure
+      updateProductStatus(id, productToToggle.isActive);
     }
   };
 
@@ -102,13 +72,26 @@ const ProductCatalog: React.FC = () => {
     setCurrentPage(page);
   };
 
-  if (!outletId) return;
+  // Clear error when component unmounts or outlet changes
+  useEffect(() => {
+    return () => {
+      resetError();
+    };
+  }, [resetError]);
+
+  if (!outletId) return null;
 
   return (
     <div className="">
       {error && (
         <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
           {error}
+          <button
+            onClick={resetError}
+            className="ml-2 text-red-800 underline hover:no-underline"
+          >
+            Dismiss
+          </button>
         </div>
       )}
 
@@ -176,7 +159,11 @@ const ProductCatalog: React.FC = () => {
               </tr>
             ) : (
               products.map((product) => (
-                <tr onClick={()=> handleProductClick(product)} key={product.id} className="hover:bg-gray-50">
+                <tr
+                  onClick={() => handleProductClick(product)}
+                  key={product.id}
+                  className="hover:bg-gray-50 cursor-pointer"
+                >
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-3">
                       <Image
@@ -236,11 +223,13 @@ const ProductCatalog: React.FC = () => {
         </table>
 
         {!loading && products.length > 0 && (
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
+          <div className="mt-6">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
+          </div>
         )}
       </div>
     </div>
