@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { Product, ProductHistory } from "@/types/product";
 import productManagementService from "@/services/productManagementService";
+import { ApiResponseType } from "@/types/httpTypes";
 
 interface ProductResponse {
   status: boolean;
@@ -119,9 +120,9 @@ export const useProductManagementStore = create<IProductManagementStore>((set, g
   // Delete Product
   deleteProduct: async (outletId: number, productId: number) => {
     try {
-      // const response = await productManagementService.deleteProduct(outletId, productId) as ApiResponseType;
+      const response = await productManagementService.deleteProduct(outletId, productId) as ApiResponseType;
 
-      if (true) { // Replace `true` with `response.status` when uncommenting API call
+      if (response.status) { // Replace `true` with `response.status` when uncommenting API call
         const state = get();
         const updatedProducts = state.products.filter((p) => p.id !== productId);
         const updatedAllProducts = state.allProducts.filter((p) => p.id !== productId);
