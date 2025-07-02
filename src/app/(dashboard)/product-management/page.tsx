@@ -22,7 +22,7 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const ProductionManagement = () => {
   const [selectedView, setSelectedView] = useState<"list" | "card">("list");
@@ -36,12 +36,18 @@ const ProductionManagement = () => {
 
   const [showCreateProductModal, setShowCreateProductModal] =
     useState<boolean>(false);
-  const { productClicked, fetchProducts } = useProductManagementStore();
+  const { productClicked, fetchProducts, fetchCategory, fetchPreparationArea, fetchPackagingMethod } = useProductManagementStore();
   const outletId = useSelectedOutlet()?.outlet.id
 
   const handleSearchProduct =async () => {
     await fetchProducts(outletId  as number, undefined, undefined, searchText);
   }
+
+  useEffect(() => {
+    fetchCategory()
+    fetchPreparationArea()
+    fetchPackagingMethod()
+  }, [fetchCategory, fetchPreparationArea, fetchPackagingMethod])
   return (
     <section className="mx-3.5 my-[20px] ">
       {showBulkUploadHistory ? (

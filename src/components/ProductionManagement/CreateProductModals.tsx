@@ -10,6 +10,7 @@ import productManagementService from "@/services/productManagementService";
 import { ApiResponseType } from "@/types/httpTypes";
 import Image from "next/image";
 import { ConvertTimeToSeconds } from "@/utils/getTimers";
+import { useProductManagementStore } from "@/stores/useProductManagementStore";
 
 interface CreateProductModalsProps {
   onClose: () => void;
@@ -17,25 +18,8 @@ interface CreateProductModalsProps {
   isOpen: boolean;
 }
 
-const categoryList = [
-  "Bread",
-  "Dough",
-  "Pastries",
-  "Cakes",
-  "Cookies",
-  "Muffins",
-];
 
-const allergensList = [
-  "Gluten",
-  "Dairy",
-  "Nuts",
-  "Eggs",
-  "Soy",
-  "Fish",
-  "Shellfish",
-  "Sesame",
-];
+
 
 const units = ["Mg", "Kg", "T"];
 
@@ -79,6 +63,7 @@ const CreateProductModals: React.FC<CreateProductModalsProps> = ({
   const [isVisible, setIsVisible] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const { categories, preparationArea, packagingMethod} = useProductManagementStore()
 
   const { selectedOutletId } = useBusinessStore();
   // Form data state
@@ -128,6 +113,9 @@ const CreateProductModals: React.FC<CreateProductModalsProps> = ({
     packagingMethod: "",
     imageUrl: "",
   });
+  
+
+  
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleInputChange = (field: keyof ProductFormData, value: any) => {
@@ -330,7 +318,7 @@ const CreateProductModals: React.FC<CreateProductModalsProps> = ({
               </label>
               <DropdownSelector
                 searchPlaceholder="Search Product Category"
-                items={categoryList}
+                items={categories}
                 placeholder="Select Category"
                 onSelect={(item) => handleInputChange("category", item)}
               />
@@ -407,7 +395,7 @@ const CreateProductModals: React.FC<CreateProductModalsProps> = ({
               </label>
               <DropdownSelector
                 searchPlaceholder="Search Preparation Area"
-                items={allergensList}
+                items={preparationArea}
                 placeholder="Select a preparation area"
                 onSelect={(item) => handleInputChange("preparationArea", item)}
               />
@@ -531,7 +519,7 @@ const CreateProductModals: React.FC<CreateProductModalsProps> = ({
               </label>
               <DropdownSelector
                 searchPlaceholder="Search packaging method"
-                items={allergensList}
+                items={packagingMethod}
                 placeholder="Select a packaging method"
                 onSelect={(item) => handleInputChange("packagingMethod", item)}
               />

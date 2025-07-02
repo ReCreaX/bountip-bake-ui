@@ -148,6 +148,12 @@ class ProductManagementService {
     );
   }
   
+  async fetchSystemDefaults (key:string) {
+    return this.request.get(
+      `/system-defaults/${key}`,
+      COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS
+    );
+  }
 }
 
 const productManagementService = new ProductManagementService();
