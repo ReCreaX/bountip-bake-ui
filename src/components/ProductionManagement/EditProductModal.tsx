@@ -221,12 +221,12 @@ const EditProductModals: React.FC<EditProductModalsProps> = ({
         description: selectedProduct.description || "",
         preparationArea: selectedProduct.preparationArea || "",
         hasAllergens: !!selectedProduct.allergenList,
-        allergens:
-          selectedProduct.allergenList?.allergies.map((allergy, index) => ({
-            id: (index + 1).toString(),
-            name: allergy,
-            isSelected: true,
-          })) || [],
+        allergens: [],
+          // selectedProduct.allergenList?.allergies.map((allergy, index) => ({
+          //   id: (index + 1).toString(),
+          //   name: allergy,
+          //   isSelected: true,
+          // })) || [],
         leadTimeHours:
           Math.floor((selectedProduct.leadTime || 0) / 3600).toString() || "",
         leadTimeMinutes:
