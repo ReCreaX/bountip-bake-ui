@@ -134,6 +134,7 @@ export const PriceSettingsModal: React.FC<PriceSettingsModalProps> = ({
   const handleSaveAll = async () => {
     const newTiers = tiers.filter((tier) => tier.isNew);
 
+    console.log(tiers, "tiers");
     if (newTiers.length === 0) {
       toast.info("No new price tiers to save.");
       return;
@@ -242,12 +243,16 @@ export const PriceSettingsModal: React.FC<PriceSettingsModalProps> = ({
                     )}
 
                     <div className="text-sm text-gray-600 space-y-2">
-                      <div className="border border-[#E6E6E6] px-3.5 py-2.5 rounded-[12px]">
-                        Markup: {markup}%
-                      </div>
-                      <div className="border border-[#E6E6E6] px-3.5 py-2.5 rounded-[12px]">
-                        Discount: {discount}%
-                      </div>
+                      {markup > 0 && (
+                        <div className="border border-[#E6E6E6] px-3.5 py-2.5 rounded-[12px]">
+                          Markup: {markup}%
+                        </div>
+                      )}
+                      {discount > 0 && (
+                        <div className="border border-[#E6E6E6] px-3.5 py-2.5 rounded-[12px]">
+                          Discount: {discount}%
+                        </div>
+                      )}
                     </div>
                   </>
                 )}
@@ -261,22 +266,21 @@ export const PriceSettingsModal: React.FC<PriceSettingsModalProps> = ({
         </div>
 
         {/* Only show save button if there are new tiers */}
-        {tiers.some((tier) => tier.isNew) && (
-          <div className="flex flex-col gap-3">
-            <button
-              onClick={handleSaveAll}
-              disabled={isSaving}
-              className={`w-full text-white py-3 rounded-[10px] font-medium text-base transition-colors ${
-                isSaving
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-[#15BA5C] hover:bg-[#13a552]"
-              }`}
-              type="button"
-            >
-              {isSaving ? "Saving..." : "Save all Price Tiers"}
-            </button>
-          </div>
-        )}
+
+        <div className="flex flex-col gap-3">
+          <button
+            onClick={handleSaveAll}
+            disabled={isSaving}
+            className={`w-full text-white py-3 rounded-[10px] font-medium text-base transition-colors ${
+              isSaving
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-[#15BA5C] hover:bg-[#13a552]"
+            }`}
+            type="button"
+          >
+            {isSaving ? "Saving..." : "Save all Price Tiers"}
+          </button>
+        </div>
       </div>
     </Modal>
   );
