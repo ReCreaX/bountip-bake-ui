@@ -1,6 +1,7 @@
 import { COOKIE_NAMES } from "@/utils/cookiesUtils";
 import { HttpService } from "./httpService";
 import { Product } from "@/types/product";
+import { SystemDefault } from "@/types/systemDefault";
 
 class ProductManagementService {
   private request = new HttpService();
@@ -151,6 +152,13 @@ class ProductManagementService {
   async fetchSystemDefaults (key:string) {
     return this.request.get(
       `/system-defaults/${key}`,
+      COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS
+    );
+  }
+  async createSystemDefaults (key:SystemDefault, item:string) {
+    return this.request.post(
+      `/system-defaults/${key}`,
+      {item},
       COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS
     );
   }

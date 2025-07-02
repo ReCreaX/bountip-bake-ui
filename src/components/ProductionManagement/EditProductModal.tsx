@@ -22,26 +22,6 @@ interface EditProductModalsProps {
   isOpen: boolean;
 }
 
-const categoryList = [
-  "Bread",
-  "Dough",
-  "Pastries",
-  "Cakes",
-  "Cookies",
-  "Muffins",
-];
-
-const allergensList = [
-  "Gluten",
-  "Dairy",
-  "Nuts",
-  "Eggs",
-  "Soy",
-  "Fish",
-  "Shellfish",
-  "Sesame",
-];
-
 const units = ["Mg", "Kg", "T"];
 
 interface ProductFormData {
@@ -76,13 +56,10 @@ interface Allergen {
   isSelected: boolean;
 }
 
-
-
 const tabs = [
   { id: "basic", label: "Basic Information" },
   { id: "price", label: "Price History" },
 ] as const;
-
 
 const EditProductModals: React.FC<EditProductModalsProps> = ({
   isOpen,
@@ -103,10 +80,11 @@ const EditProductModals: React.FC<EditProductModalsProps> = ({
     updateProduct,
     addProduct,
     fetchProductPriceHistory,
-
+    categories,
+    preparationArea,
+    packagingMethod,
     selectedProductPriceHistory,
   } = useProductManagementStore();
-  const {} = useProductManagementStore();
 
   const [activeTab, setActiveTab] = useState<"basic" | "price">("basic");
   const outlet = useSelectedOutlet();
@@ -221,7 +199,7 @@ const EditProductModals: React.FC<EditProductModalsProps> = ({
       console.log(selectedProduct);
       setFormData({
         productName: selectedProduct.name,
-        category: selectedProduct.category ,
+        category: selectedProduct.category,
         sellingPrice: selectedProduct.price?.toString() || "",
         hasPriceTiers: !!selectedProduct.priceTierId,
         priceTiers: selectedProduct.priceTierId
@@ -487,7 +465,7 @@ const EditProductModals: React.FC<EditProductModalsProps> = ({
                   </label>
                   <DropdownSelector
                     searchPlaceholder="Search Product Category"
-                    items={categoryList}
+                    items={categories}
                     placeholder="Select Category"
                     onSelect={(item) => handleInputChange("category", item)}
                   />
@@ -564,7 +542,7 @@ const EditProductModals: React.FC<EditProductModalsProps> = ({
                   </label>
                   <DropdownSelector
                     searchPlaceholder="Search Preparation Area"
-                    items={allergensList}
+                    items={preparationArea}
                     placeholder="Select a preparation area"
                     onSelect={(item) =>
                       handleInputChange("preparationArea", item)
@@ -693,7 +671,7 @@ const EditProductModals: React.FC<EditProductModalsProps> = ({
                   </label>
                   <DropdownSelector
                     searchPlaceholder="Search packaging method"
-                    items={allergensList}
+                    items={packagingMethod}
                     placeholder="Select a packaging method"
                     onSelect={(item) =>
                       handleInputChange("packagingMethod", item)

@@ -1,11 +1,14 @@
 import React, { useState } from "react";
 import { ChevronDown, Plus, Search } from "lucide-react";
+import { SystemDefault } from "@/types/systemDefault";
+import productManagementService from "@/services/productManagementService";
 
 interface DropdownSelectorProps {
   searchPlaceholder: string;
   items: string[];
   placeholder?: string;
   onSelect: (item: string) => void;
+  madeFor?:SystemDefault
 }
 
 export function DropdownSelector({
@@ -13,6 +16,7 @@ export function DropdownSelector({
   items,
   placeholder = "Select Item",
   onSelect,
+  madeFor
 }: DropdownSelectorProps) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [showAddNew, setShowAddNew] = useState<boolean>(false);
@@ -32,9 +36,14 @@ export function DropdownSelector({
     setSearchTerm("");
   };
 
-  const handleAddNewItem = () => {
+  const handleAddNewItem = async() => {
     const trimmed = newItem.trim();
     if (!trimmed || localItems.includes(trimmed)) return;
+    if(madeFor == "preparation-area"){
+
+      const response = await productManagementService.createSystemDefaults("category", trimmed);
+     console.log(response)
+    }
 
     setLocalItems([...localItems, trimmed]);
     setSelectedItem(trimmed);
