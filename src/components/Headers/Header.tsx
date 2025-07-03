@@ -36,7 +36,6 @@ const Header = () => {
   }, [fetchBusinessData]);
 
   const handleLogOut = () => {
-    removeCookie(COOKIE_NAMES.BOUNTIP_LOGIN_USER);
     removeCookie(COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS);
     router.push("/auth?signin");
   };
