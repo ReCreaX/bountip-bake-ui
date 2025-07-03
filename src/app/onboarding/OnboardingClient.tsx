@@ -32,11 +32,12 @@ const OnboardingClient = () => {
       const isUserRegistered =
         userTokens && userTokens.accessToken && userTokens.refreshToken;
       if (!isUserRegistered) {
-        // router.push("/auth?signup");
+         router.push("/auth?signup");
         return null;
       }
     };
     checkIfUserRegistered();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userTokens]);
   return (
     <main className="flex min-h-screen">
