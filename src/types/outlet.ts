@@ -193,7 +193,9 @@ export type Outlet = {
   description: string | null;
   address: string | null;
   state: string | null;
+  //Just Added
   city?:string
+  email?:string
   postalCode: string | null;
   phoneNumber: string | null;
   country: string | null;

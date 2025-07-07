@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Modal } from "../ui/Modal";
 import SettingFiles from "@/assets/icons/settings";
 import Image from "next/image";
@@ -35,6 +35,11 @@ export const PriceSettingsModal: React.FC<PriceSettingsModalProps> = ({
   const { selectedOutletId, outlets } = useBusinessStore();
   const [tiers, setTiers] = useState<PriceTier[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const priceTierFormRef = useRef<{
+    addPendingTier: () => boolean;
+    getPendingTier: () => PriceTier | null;
+    resetForm: () => void;
+  }>(null);
 
   // Initialize tiers only when modal opens and selectedOutletId exists
   React.useEffect(() => {
@@ -132,10 +137,22 @@ export const PriceSettingsModal: React.FC<PriceSettingsModalProps> = ({
   };
 
   const handleSaveAll = async () => {
+    // Get any pending tier from the form
+    const pendingTier = priceTierFormRef.current?.getPendingTier();
+
+    // Get all new tiers from the current state
     const newTiers = tiers.filter((tier) => tier.isNew);
 
+    // Combine existing new tiers with the pending tier (if any)
+    const allTiersToSave = [...newTiers];
+    if (pendingTier) {
+      allTiersToSave.push(pendingTier);
+    }
+
     console.log(tiers, "tiers");
-    if (newTiers.length === 0) {
+    console.log(allTiersToSave, "allTiersToSave");
+
+    if (allTiersToSave.length === 0) {
       toast.info("No new price tiers to save.");
       return;
     }
@@ -143,7 +160,7 @@ export const PriceSettingsModal: React.FC<PriceSettingsModalProps> = ({
     setIsSaving(true);
     try {
       const results = await Promise.allSettled(
-        newTiers.map((tier) =>
+        allTiersToSave.map((tier) =>
           settingsService.addPriceTier({
             outletId: selectedOutletId,
             name: tier.name,
@@ -159,8 +176,18 @@ export const PriceSettingsModal: React.FC<PriceSettingsModalProps> = ({
         toast.error(`${failed.length} tier(s) failed to save.`);
       } else {
         toast.success("All price tiers saved successfully.");
-        // Mark all tiers as saved
-        setTiers((prev) => prev.map((tier) => ({ ...tier, isNew: false })));
+        // Mark all tiers as saved and add the pending tier to the list
+        setTiers((prev) => {
+          const updatedTiers = prev.map((tier) => ({ ...tier, isNew: false }));
+          // Add the pending tier if it exists
+          if (pendingTier) {
+            updatedTiers.push({ ...pendingTier, isNew: false });
+          }
+          return updatedTiers;
+        });
+
+        // Clear the form after successful save
+        priceTierFormRef.current?.resetForm();
       }
     } catch (error) {
       console.error("Failed to save tiers", error);
@@ -262,7 +289,7 @@ export const PriceSettingsModal: React.FC<PriceSettingsModalProps> = ({
 
         <div>
           <h4 className="font-medium mb-4">Add New Price Tier</h4>
-          <PriceTierForm onAdd={addTier} />
+          <PriceTierForm ref={priceTierFormRef} onAdd={addTier} />
         </div>
 
         {/* Only show save button if there are new tiers */}
@@ -278,7 +305,7 @@ export const PriceSettingsModal: React.FC<PriceSettingsModalProps> = ({
             }`}
             type="button"
           >
-            {isSaving ? "Saving..." : "Save all Price Tiers"}
+            {isSaving ? "Saving..." : "Save Price Tiers"}
           </button>
         </div>
       </div>
@@ -334,7 +361,7 @@ const EditableTierForm: React.FC<EditableTierFormProps> = ({
 
   const handleSave = () => {
     if (!editedTier.name || editedTier.name.trim() === "") {
-      alert("Please enter a price tier name.");
+      toast.warning("Please enter a price tier name.");
       return;
     }
 
@@ -356,8 +383,8 @@ const EditableTierForm: React.FC<EditableTierFormProps> = ({
         <label className="block text-sm font-medium mb-1">
           Price Tier Name
         </label>
-        <Input
-          className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg"
+        <input type="text"
+          className="w-full px-4 py-3 bg-white border border-[#D1D1D1] outline-none rounded-lg"
           value={editedTier.name}
           onChange={(e) =>
             setEditedTier({ ...editedTier, name: e.target.value })
@@ -371,7 +398,7 @@ const EditableTierForm: React.FC<EditableTierFormProps> = ({
           Description (optional)
         </label>
         <textarea
-          className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg resize-none text-sm"
+          className="w-full px-4 py-3 bg-white border border-gray-300 outline-none rounded-lg resize-none text-sm"
           value={editedTier.description}
           onChange={(e) =>
             setEditedTier({ ...editedTier, description: e.target.value })
@@ -470,7 +497,14 @@ interface PriceTierFormProps {
   onAdd: (tier: Omit<PriceTier, "id" | "isActive">) => void;
 }
 
-export const PriceTierForm: React.FC<PriceTierFormProps> = ({ onAdd }) => {
+export const PriceTierForm = React.forwardRef<
+  {
+    addPendingTier: () => boolean;
+    getPendingTier: () => PriceTier | null;
+    resetForm: () => void;
+  },
+  PriceTierFormProps
+>(({ onAdd }, ref) => {
   const [tier, setTier] = useState({
     name: "",
     description: "",
@@ -497,10 +531,34 @@ export const PriceTierForm: React.FC<PriceTierFormProps> = ({ onAdd }) => {
     }
   };
 
-  const handleAdd = () => {
+  const resetForm = () => {
+    setTier({
+      name: "",
+      description: "",
+      markupPercent: 0,
+      discountPercent: 0,
+    });
+    setMarkupEnabled(false);
+    setDiscountEnabled(false);
+  };
+
+  const createTierObject = () => {
+    return {
+      id: Date.now(),
+      name: tier.name.trim(),
+      description: tier.description.trim(),
+      pricingRules: {
+        markupPercentage: markupEnabled ? tier.markupPercent : undefined,
+        discountPercentage: discountEnabled ? tier.discountPercent : undefined,
+      },
+      isActive: true,
+      isNew: true,
+    };
+  };
+
+  const addTierInternal = () => {
     if (!tier.name || tier.name.trim() === "") {
-      alert("Please enter a price tier name.");
-      return;
+      return false;
     }
 
     const newTier = {
@@ -513,16 +571,35 @@ export const PriceTierForm: React.FC<PriceTierFormProps> = ({ onAdd }) => {
     };
 
     onAdd(newTier);
+    resetForm();
+    return true;
+  };
 
-    // Reset form
-    setTier({
-      name: "",
-      description: "",
-      markupPercent: 0,
-      discountPercent: 0,
-    });
-    setMarkupEnabled(false);
-    setDiscountEnabled(false);
+  // Expose methods to parent component
+  React.useImperativeHandle(ref, () => ({
+    addPendingTier: () => {
+      // Only add if there's actually data in the form
+      if (tier.name.trim() !== "") {
+        return addTierInternal();
+      }
+      return false;
+    },
+    getPendingTier: () => {
+      // Return the pending tier if there's data, otherwise null
+      if (tier.name.trim() !== "") {
+        return createTierObject();
+      }
+      return null;
+    },
+    resetForm: resetForm,
+  }));
+
+  const handleAdd = () => {
+    if (!tier.name || tier.name.trim() === "") {
+      alert("Please enter a price tier name.");
+      return;
+    }
+    addTierInternal();
   };
 
   return (
@@ -531,8 +608,9 @@ export const PriceTierForm: React.FC<PriceTierFormProps> = ({ onAdd }) => {
         <label className="block text-sm font-medium mb-1">
           Price Tier Name
         </label>
-        <Input
-          className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg"
+        <input
+        type="text"
+          className="w-full px-4 py-3 bg-white border outline-none border-[#D1D1D1] rounded-lg"
           value={tier.name}
           onChange={(e) => setTier({ ...tier, name: e.target.value })}
           placeholder="Enter the name of the Price Tier"
@@ -544,7 +622,7 @@ export const PriceTierForm: React.FC<PriceTierFormProps> = ({ onAdd }) => {
           Description (optional)
         </label>
         <textarea
-          className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg resize-none text-sm"
+          className="w-full px-4 py-3 bg-white border border-[#D1D1D1] outline-none rounded-lg resize-none text-sm"
           value={tier.description}
           onChange={(e) => setTier({ ...tier, description: e.target.value })}
           placeholder="Enter description"
@@ -559,7 +637,7 @@ export const PriceTierForm: React.FC<PriceTierFormProps> = ({ onAdd }) => {
             id="new-markup-checkbox"
             checked={markupEnabled}
             onChange={(e) => handleMarkupToggle(e.target.checked)}
-            className="w-4 h-4 text-[#15BA5C] border-gray-300 rounded focus:ring-[#15BA5C]"
+            className="w-4 h-4 text-[#15BA5C] border-[#D1D1D1] rounded focus:ring-[#15BA5C]"
           />
           <label htmlFor="new-markup-checkbox" className="text-sm font-medium">
             Markup %
@@ -568,7 +646,7 @@ export const PriceTierForm: React.FC<PriceTierFormProps> = ({ onAdd }) => {
 
         {markupEnabled && (
           <Input
-            className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg"
+            className="w-full px-4 py-3 bg-white border border-[#D1D1D1] outline-none rounded-lg"
             type="number"
             min={0}
             max={100}
@@ -591,7 +669,7 @@ export const PriceTierForm: React.FC<PriceTierFormProps> = ({ onAdd }) => {
             id="new-discount-checkbox"
             checked={discountEnabled}
             onChange={(e) => handleDiscountToggle(e.target.checked)}
-            className="w-4 h-4 text-[#15BA5C] border-gray-300 rounded focus:ring-[#15BA5C]"
+            className="w-4 h-4 text-[#15BA5C] border-[#D1D1D1] rounded focus:ring-[#15BA5C]"
           />
           <label
             htmlFor="new-discount-checkbox"
@@ -606,7 +684,7 @@ export const PriceTierForm: React.FC<PriceTierFormProps> = ({ onAdd }) => {
             type="number"
             min={0}
             max={100}
-            className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg"
+            className="w-full px-4 py-3 bg-white border border-[#D1D1D1] rounded-lg"
             value={tier.discountPercent || ""}
             onChange={(e) =>
               setTier({
@@ -628,4 +706,6 @@ export const PriceTierForm: React.FC<PriceTierFormProps> = ({ onAdd }) => {
       </button>
     </div>
   );
-};
+});
+
+PriceTierForm.displayName = "PriceTierForm";

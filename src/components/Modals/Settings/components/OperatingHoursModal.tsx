@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Modal } from "../ui/Modal";
 import { Check, ChevronDown, ChevronUp } from "lucide-react";
 import SettingFiles from "@/assets/icons/settings";
@@ -8,13 +8,11 @@ import { OperatingHoursType } from "@/types/settingTypes";
 import { toast } from "sonner";
 import { ApiResponseType } from "@/types/httpTypes";
 import { useBusiness } from "@/hooks/useBusiness";
+import { usePureOutlets } from "@/hooks/useSelectedOutlet";
 
 interface OperatingHoursModalProps {
   isOpen: boolean;
   onClose: () => void;
-  
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  outletsData: any[];
 }
 
 interface Location {
@@ -46,16 +44,16 @@ const TimeInput: React.FC<{
 
   const formatTime = (input: string): string => {
     // Remove all non-digit characters
-    const digits = input.replace(/\D/g, '');
-    
-    if (digits.length === 0) return '';
+    const digits = input.replace(/\D/g, "");
+
+    if (digits.length === 0) return "";
     if (digits.length <= 2) return digits;
     if (digits.length <= 4) {
       const hours = digits.slice(0, 2);
       const minutes = digits.slice(2);
       return `${hours}:${minutes}`;
     }
-    
+
     // Limit to 4 digits max
     const hours = digits.slice(0, 2);
     const minutes = digits.slice(2, 4);
@@ -73,9 +71,9 @@ const TimeInput: React.FC<{
   };
 
   const handleBlur = () => {
-    if (inputValue === '') {
-      setInputValue('00:00');
-      onChange('00:00');
+    if (inputValue === "") {
+      setInputValue("00:00");
+      onChange("00:00");
       return;
     }
 
@@ -88,9 +86,9 @@ const TimeInput: React.FC<{
       const padded = `${inputValue}:00`;
       setInputValue(padded);
       onChange(padded);
-    } else if (inputValue.length === 4 && inputValue.includes(':')) {
-      const [hours, minutes] = inputValue.split(':');
-      const padded = `${hours.padStart(2, '0')}:${minutes.padEnd(2, '0')}`;
+    } else if (inputValue.length === 4 && inputValue.includes(":")) {
+      const [hours, minutes] = inputValue.split(":");
+      const padded = `${hours.padStart(2, "0")}:${minutes.padEnd(2, "0")}`;
       setInputValue(padded);
       onChange(padded);
     } else if (validateTime(inputValue)) {
@@ -103,16 +101,21 @@ const TimeInput: React.FC<{
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     // Allow: backspace, delete, tab, escape, enter, and arrow keys
-    if ([8, 9, 27, 13, 37, 38, 39, 40, 46].includes(e.keyCode) ||
-        // Allow Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
-        (e.keyCode === 65 && e.ctrlKey) ||
-        (e.keyCode === 67 && e.ctrlKey) ||
-        (e.keyCode === 86 && e.ctrlKey) ||
-        (e.keyCode === 88 && e.ctrlKey)) {
+    if (
+      [8, 9, 27, 13, 37, 38, 39, 40, 46].includes(e.keyCode) ||
+      // Allow Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+      (e.keyCode === 65 && e.ctrlKey) ||
+      (e.keyCode === 67 && e.ctrlKey) ||
+      (e.keyCode === 86 && e.ctrlKey) ||
+      (e.keyCode === 88 && e.ctrlKey)
+    ) {
       return;
     }
     // Ensure that it's a number and stop the keypress
-    if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+    if (
+      (e.shiftKey || e.keyCode < 48 || e.keyCode > 57) &&
+      (e.keyCode < 96 || e.keyCode > 105)
+    ) {
       e.preventDefault();
     }
   };
@@ -135,85 +138,62 @@ const TimeInput: React.FC<{
 export const OperatingHoursModal: React.FC<OperatingHoursModalProps> = ({
   isOpen,
   onClose,
-  outletsData,
-
 }) => {
   const [locations, setLocations] = useState<Location[]>([]);
   const [selectAllMap, setSelectAllMap] = useState<Record<string, boolean>>({});
-
-    const business = useBusiness();
-    const businessId = business?.id;
-
   const [operatingHours, setOperatingHours] = useState<
     Record<string, DayHours[]>
-  >({
-    "1": [
-      { day: "Sunday", enabled: false, openTime: "00:00", closeTime: "00:00" },
-      { day: "Monday", enabled: false, openTime: "00:00", closeTime: "00:00" },
-      { day: "Tuesday", enabled: false, openTime: "00:00", closeTime: "00:00" },
-      {
-        day: "Wednesday",
-        enabled: false,
-        openTime: "00:00",
-        closeTime: "00:00",
-      },
-      {
-        day: "Thursday",
-        enabled: false,
-        openTime: "00:00",
-        closeTime: "00:00",
-      },
-      { day: "Friday", enabled: false, openTime: "00:00", closeTime: "00:00" },
-      {
-        day: "Saturday",
-        enabled: false,
-        openTime: "00:00",
-        closeTime: "00:00",
-      },
-    ],
-    "2": [
-      { day: "Sunday", enabled: false, openTime: "00:00", closeTime: "00:00" },
-      { day: "Monday", enabled: false, openTime: "00:00", closeTime: "00:00" },
-      { day: "Tuesday", enabled: false, openTime: "00:00", closeTime: "00:00" },
-      {
-        day: "Wednesday",
-        enabled: false,
-        openTime: "00:00",
-        closeTime: "00:00",
-      },
-      {
-        day: "Thursday",
-        enabled: false,
-        openTime: "00:00",
-        closeTime: "00:00",
-      },
-      { day: "Friday", enabled: false, openTime: "00:00", closeTime: "00:00" },
-      {
-        day: "Saturday",
-        enabled: false,
-        openTime: "00:00",
-        closeTime: "00:00",
-      },
-    ],
-  });
-  
+  >({});
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  const outletsData = usePureOutlets();
+  const business = useBusiness();
+  const businessId = business?.id;
+
+  // Use ref to track if we've already processed the data
+  const processedOutletIds = useRef<Set<string>>(new Set());
+
+  console.log(outletsData, "The one we need");
+
+  // Initialize locations and operating hours - runs only when modal opens and data is available
   useEffect(() => {
-    if (!outletsData || outletsData.length === 0) return;
+    // Only run if modal is open and we have data and haven't initialized yet
+    if (!isOpen || !outletsData || outletsData.length === 0 || isInitialized) {
+      return;
+    }
+
+    // Check if we've already processed this exact set of outlets
+    const currentOutletIds = outletsData
+      .map((item) => String(item.id))
+      .sort()
+      .join(",");
+    const lastProcessedIds = Array.from(processedOutletIds.current)
+      .sort()
+      .join(",");
+
+    if (currentOutletIds === lastProcessedIds) {
+      return;
+    }
+
+    console.log("Initializing with outlets data:", outletsData);
 
     const newLocations = outletsData.map((item) => ({
-      id: String(item.outlet.id),
-      name: item.outlet.name || "Unnamed Outlet",
-      address: item.outlet.address || "No address provided",
-      expanded: true,
+      id: String(item.id),
+      name: item.name || "Unnamed Outlet",
+      address: item.address || "No address provided",
+      expanded: false, // Start with all collapsed
     }));
 
+    console.log("New locations:", newLocations);
     setLocations(newLocations);
 
     const initialOperatingHours: Record<string, DayHours[]> = {};
 
     newLocations.forEach((loc) => {
-      const rawHours = outletsData.find((o) => String(o.outlet.id) === loc.id)
-        ?.outlet.operatingHours;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const rawHours: any = outletsData.find(
+        (o) => String(o.id) === loc.id
+      )?.operatingHours;
 
       const defaultDayHours = [
         "sunday",
@@ -234,22 +214,43 @@ export const OperatingHoursModal: React.FC<OperatingHoursModalProps> = ({
     });
 
     setOperatingHours(initialOperatingHours);
-  }, [outletsData]);
+
+    // Update the processed outlet IDs
+    processedOutletIds.current = new Set(
+      outletsData.map((item) => String(item.id))
+    );
+    setIsInitialized(true);
+  }, [isOpen, outletsData, isInitialized]);
+
+  // Reset initialization when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setIsInitialized(false);
+      setLocations([]);
+      setOperatingHours({});
+      setSelectAllMap({});
+    }
+  }, [isOpen]);
 
   const toggleLocation = (locationId: string) => {
-    setLocations((prev) =>
-      prev.map((loc) =>
+    console.log("Toggle location clicked:", locationId);
+
+    setLocations((prev) => {
+      const updated = prev.map((loc) =>
         loc.id === locationId ? { ...loc, expanded: !loc.expanded } : loc
-      )
-    );
+      );
+      console.log("Updated locations:", updated);
+      return updated;
+    });
   };
 
   const handleDayToggle = (locationId: string, dayIndex: number) => {
     setOperatingHours((prev) => ({
       ...prev,
-      [locationId]: prev[locationId].map((day, index) =>
-        index === dayIndex ? { ...day, enabled: !day.enabled } : day
-      ),
+      [locationId]:
+        prev[locationId]?.map((day, index) =>
+          index === dayIndex ? { ...day, enabled: !day.enabled } : day
+        ) || [],
     }));
   };
 
@@ -261,9 +262,10 @@ export const OperatingHoursModal: React.FC<OperatingHoursModalProps> = ({
   ) => {
     setOperatingHours((prev) => ({
       ...prev,
-      [locationId]: prev[locationId].map((day, index) =>
-        index === dayIndex ? { ...day, [field]: value } : day
-      ),
+      [locationId]:
+        prev[locationId]?.map((day, index) =>
+          index === dayIndex ? { ...day, [field]: value } : day
+        ) || [],
     }));
   };
 
@@ -321,14 +323,48 @@ export const OperatingHoursModal: React.FC<OperatingHoursModalProps> = ({
     const results = await Promise.all(updatePromises);
 
     const successes = results.filter((r) => r.success).length;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const failures = results.filter((r) => !r.success);
 
     onClose();
     toast.success(`${successes} outlet(s) updated successfully`, {
       duration: 3000,
     });
   };
+
+  // Show loading state or empty state
+  if (!outletsData || outletsData.length === 0) {
+    return (
+      <Modal
+        size={"lg"}
+        image={SettingFiles.OperatingHours}
+        isOpen={isOpen}
+        onClose={onClose}
+        title="Operating Hours"
+        subtitle="Setup your Operating hours for all locations"
+      >
+        <div className="p-4 text-center">
+          <p className="text-gray-600">Loading outlets...</p>
+        </div>
+      </Modal>
+    );
+  }
+
+  // Show loading state while initializing
+  if (!isInitialized) {
+    return (
+      <Modal
+        size={"lg"}
+        image={SettingFiles.OperatingHours}
+        isOpen={isOpen}
+        onClose={onClose}
+        title="Operating Hours"
+        subtitle="Setup your Operating hours for all locations"
+      >
+        <div className="p-4 text-center">
+          <p className="text-gray-600">Initializing...</p>
+        </div>
+      </Modal>
+    );
+  }
 
   return (
     <Modal
@@ -339,9 +375,11 @@ export const OperatingHoursModal: React.FC<OperatingHoursModalProps> = ({
       title="Operating Hours"
       subtitle="Setup your Operating hours for all locations"
     >
-      <>
-        <div className="space-y-4 overflow-y-auto">
-          {locations.map((location) => (
+      <div className="space-y-4 overflow-y-auto">
+        {locations.map((location) => {
+          const locationHours = operatingHours[location.id] || [];
+
+          return (
             <div
               key={location.id}
               className="border border-gray-200 rounded-lg"
@@ -365,9 +403,9 @@ export const OperatingHoursModal: React.FC<OperatingHoursModalProps> = ({
 
               {location.expanded && (
                 <div className="px-4 pb-4 border-t border-gray-100 flex flex-col gap-10">
-                  {operatingHours[location.id]?.map((dayHours, dayIndex) => (
+                  {locationHours.map((dayHours, dayIndex) => (
                     <div
-                      key={dayHours.day}
+                      key={`${location.id}-${dayHours.day}`}
                       className="flex items-center justify-between gap-4 relative mt-2.5"
                     >
                       <div className="w-32">
@@ -431,7 +469,7 @@ export const OperatingHoursModal: React.FC<OperatingHoursModalProps> = ({
 
                                 setOperatingHours((prev) => ({
                                   ...prev,
-                                  [location.id]: prev[location.id].map(
+                                  [location.id]: (prev[location.id] || []).map(
                                     (day) => ({
                                       ...day,
                                       enabled: isChecked,
@@ -452,19 +490,19 @@ export const OperatingHoursModal: React.FC<OperatingHoursModalProps> = ({
                 </div>
               )}
             </div>
-          ))}
-          <div className="flex justify-end">
-            <button
-              onClick={() => handleSubmit()}
-              className="flex items-center justify-center gap-2 bg-[#15BA5C] w-full text-[#ffffff] py-3 rounded-[10px] font-medium text-base mt-5"
-              type="button"
-            >
-              <Check className="text-[14px]" />
-              <span className=""> Save Operating Hours</span>
-            </button>
-          </div>
+          );
+        })}
+        <div className="flex justify-end">
+          <button
+            onClick={() => handleSubmit()}
+            className="flex items-center justify-center gap-2 bg-[#15BA5C] w-full text-[#ffffff] py-3 rounded-[10px] font-medium text-base mt-5"
+            type="button"
+          >
+            <Check className="text-[14px]" />
+            <span className=""> Save Operating Hours</span>
+          </button>
         </div>
-      </>
+      </div>
     </Modal>
   );
 };

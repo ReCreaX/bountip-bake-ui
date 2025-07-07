@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { PriceSettingsModal } from "@/components/Modals/Settings/components/PriceSettingsModal";
 import { PaymentMethodsModal } from "@/components/Modals/Settings/components/PaymentMethodsModal";
@@ -18,6 +18,7 @@ import { LocationSettingsModal } from "@/components/Modals/Settings/components/L
 
 import { ReceiptCustomizationModal } from "@/components/Modals/Settings/components/ReceiptCustomizationModal";
 import { useSelectedOutlet } from "@/hooks/useSelectedOutlet";
+import { useBusinessStore } from "@/stores/useBusinessStore";
 
 const SettingsPage: React.FC = () => {
   const outletId = useSelectedOutlet()?.outlet.id;
@@ -31,10 +32,15 @@ const SettingsPage: React.FC = () => {
     { id: "2", name: "Virtual Hub", type: "virtual", enabled: false },
     { id: "3", name: "Others", type: "others", enabled: true },
   ]);
+  const {fetchBusinessData} = useBusinessStore()
 
   const handleSettingClick = (id: string) => {
     setActiveModal(id);
   };
+  useEffect(() => {
+    fetchBusinessData()
+  }, [])
+  
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -98,7 +104,6 @@ const SettingsPage: React.FC = () => {
       <LocationSettingsModal
         isOpen={activeModal === "location"} // or whatever ID you use for location in your settingsItems
         onClose={() => setActiveModal(null)}
-        locationData={outletsData}
       />
 
       <PriceSettingsModal
@@ -130,7 +135,6 @@ const SettingsPage: React.FC = () => {
       <OperatingHoursModal
         isOpen={activeModal === "operating-hours"}
         onClose={() => setActiveModal(null)}
-        outletsData={outletsData}
       />
       <ReceiptCustomizationModal
         isOpen={activeModal === "receipt-customization"}

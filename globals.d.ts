@@ -14,7 +14,7 @@ declare module "country-currency-map" {
   export function formatCurrency(value: number, currencyAbbr: string): string;
   export function formatLocaleCurrency(value: number, currency: string): string;
   export function getCurrencyAbbreviationFromName(currencyName: string): string;
-
+  
   const countryCurrencyMap: {
     getCurrencyAbbreviation: typeof getCurrencyAbbreviation;
     getCurrency: typeof getCurrency;

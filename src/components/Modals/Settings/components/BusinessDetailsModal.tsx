@@ -154,6 +154,7 @@ const business = useBusiness()
       businessType: business?.businessType || "",
       city: outlet?.outlet.city || "",
       email: outlet?.outlet.email || "",
+      //email: business?.email || "",
       country: outlet?.outlet.country || "",
       phone: outlet?.outlet.phoneNumber || "",
       postalCode: outlet?.outlet.postalCode || "",
@@ -429,7 +430,7 @@ const business = useBusiness()
             onChange={(e) => handleChange("email", e.target.value)}
             placeholder="business@example.com"
             className={`w-full px-4 py-3 text-left bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#15BA5C] transition-colors ${getDisabledStyles(
-              details.email
+              details.email as string
             )}`}
           />
 
