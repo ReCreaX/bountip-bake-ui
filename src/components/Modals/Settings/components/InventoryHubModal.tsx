@@ -7,16 +7,19 @@ import settingsService from "@/services/settingsService";
 import { ApiResponseType } from "@/types/httpTypes";
 import { toast } from "sonner";
 import { HubType } from "@/types/settingTypes";
+import { useBusiness } from "@/hooks/useBusiness";
 
 export const InventoryHubModal: React.FC<{
   isOpen: boolean;
   onClose: () => void;
-  businessId: string;
-}> = ({ isOpen, onClose, businessId }) => {
+}> = ({ isOpen, onClose }) => {
+  
   const [formData, setFormData] = useState({
     name: "",
     location: "",
   });
+  const businessId = useBusiness()?.id;
+  if (!businessId) return;
 
   const handleCreateInventory = async () => {
     const result = (await settingsService.addInventoryHub({

@@ -37,9 +37,7 @@ const DashboardSidebarLayout = () => {
       className={`bg-white h-full ${sidebarWidth} transition-all duration-300`}
     >
       <section>
-        <p className="text-sm font-semibold px-6 pt-4 text-[#A6A6A6] ">Menu</p>
 
-        <hr className="my-2 text-[#E6E6E6]" />
 
         <nav className="flex flex-col gap-2 px-2 pb-4">
           {DashboardSidebarNavigationData.map((item) => {

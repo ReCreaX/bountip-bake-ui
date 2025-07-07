@@ -7,12 +7,12 @@ import settingsService from "@/services/settingsService";
 import { OperatingHoursType } from "@/types/settingTypes";
 import { toast } from "sonner";
 import { ApiResponseType } from "@/types/httpTypes";
+import { useBusiness } from "@/hooks/useBusiness";
 
 interface OperatingHoursModalProps {
   isOpen: boolean;
   onClose: () => void;
-  businessId: string | number | null;
-  outletId: string | number | null;
+  
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   outletsData: any[];
 }
@@ -136,12 +136,13 @@ export const OperatingHoursModal: React.FC<OperatingHoursModalProps> = ({
   isOpen,
   onClose,
   outletsData,
-  businessId,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  outletId,
+
 }) => {
   const [locations, setLocations] = useState<Location[]>([]);
   const [selectAllMap, setSelectAllMap] = useState<Record<string, boolean>>({});
+
+    const business = useBusiness();
+    const businessId = business?.id;
 
   const [operatingHours, setOperatingHours] = useState<
     Record<string, DayHours[]>

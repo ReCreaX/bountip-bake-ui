@@ -1,4 +1,3 @@
-import { BusinessDetailsType } from "@/types/businessTypes";
 import { HttpService } from "./httpService";
 import { COOKIE_NAMES } from "@/utils/cookiesUtils";
 import { InventoryHubType, OperatingHoursType } from "@/types/settingTypes";
@@ -13,7 +12,8 @@ function getLabelEnabled(
 class SettingsService {
   private request = new HttpService();
   async updateBusinessDetails(
-    data: BusinessDetailsType,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    data: any,
     outletId: number | number
   ) {
     return this.request.patch(
@@ -28,6 +28,8 @@ class SettingsService {
         postalCode: data.postalCode,
         businessType: data.businessType,
         logoUrl: data.logoUrl,
+        currency: data.currency,
+        revenueRange: data.revenueRange
       },
       COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS
     );
@@ -50,7 +52,7 @@ class SettingsService {
     address,
     phoneNumber,
   }: {
-    businessId: string;
+    businessId: number;
     name: string;
     address: string;
     phoneNumber: string;

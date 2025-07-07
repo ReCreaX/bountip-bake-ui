@@ -51,7 +51,7 @@ const Header = () => {
   const outletList: Outlet[] = outlets.map((o) => o.outlet);
 
   return (
-    <header className="flex items-center justify-between p-4 bg-white shadow-md">
+    <header className="flex items-center justify-between p-4 bg-white ">
       <section className="flex items-center gap-4">
         <Image src={AssetsFiles.LogoTwo} alt="Logo" className="w-[100px]" />
         <button

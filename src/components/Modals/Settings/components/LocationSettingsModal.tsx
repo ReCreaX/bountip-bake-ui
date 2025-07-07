@@ -7,26 +7,29 @@ import Image from "next/image";
 import { Check, Trash2 } from "lucide-react";
 import settingsService from "@/services/settingsService";
 import { toast } from "sonner";
+import { useBusiness } from "@/hooks/useBusiness";
 
 interface LocationSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   locationData: any[] | null;
-  businessId: string | null;
-  
 }
 
 export const LocationSettingsModal: React.FC<LocationSettingsModalProps> = ({
   isOpen,
   onClose,
-  businessId,
   locationData,
 }) => {
-  const [locations, setLocations] = useState<BusinessLocation[] | []>([]);
+  const [locations, setLocations] = useState<BusinessLocation[]>([]);
   const [newLocations, setNewLocations] = useState<Partial<BusinessLocation>[]>(
     [{ name: "", address: "", phoneNumber: "" }]
   );
+
+  const business = useBusiness();
+  const businessId = business?.id;
+
+  // Early return moved after hooks
   useEffect(() => {
     if (isOpen && Array.isArray(locationData)) {
       const parsedLocations: BusinessLocation[] = locationData.map((item) => ({
@@ -39,6 +42,11 @@ export const LocationSettingsModal: React.FC<LocationSettingsModalProps> = ({
       setLocations(parsedLocations);
     }
   }, [isOpen, locationData]);
+
+  // Early return after hooks
+  if (!businessId) {
+    return null;
+  }
 
   const defaultLocation = locations.find((loc) => loc.isDefault);
   const otherLocations = locations.filter((loc) => !loc.isDefault);
@@ -118,10 +126,11 @@ export const LocationSettingsModal: React.FC<LocationSettingsModalProps> = ({
         )
       );
       setNewLocations([{ name: "", address: "", phoneNumber: "" }]);
-      toast.success("Locations added succesfully")
+      toast.success("Locations added successfully");
       onClose(); // Close the modal after saving
     } catch (error) {
       console.error("Error saving locations", error);
+      toast.error("Failed to save locations");
     }
   };
 
@@ -172,7 +181,7 @@ export const LocationSettingsModal: React.FC<LocationSettingsModalProps> = ({
             {otherLocations.map((location) => (
               <div
                 key={location.id}
-                className="flex items-center justify-between"
+                className="grid grid-cols-12 gap-4 items-end"
               >
                 <div className="col-span-3">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -238,7 +247,7 @@ export const LocationSettingsModal: React.FC<LocationSettingsModalProps> = ({
             {newLocations.map((location, index) => (
               <div
                 key={`new-${index}`}
-                className="flex items-center justify-between"
+                className="grid grid-cols-12 gap-4 items-end"
               >
                 <div className="col-span-3">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -293,7 +302,7 @@ export const LocationSettingsModal: React.FC<LocationSettingsModalProps> = ({
         {/* Add New Location Button */}
         <button
           onClick={addNewLocationField}
-          className=" border border-[#15BA5C] w-full text-[#15BA5C] py-3 rounded-[10px] font-medium text-base mt-5"
+          className="border border-[#15BA5C] w-full text-[#15BA5C] py-3 rounded-[10px] font-medium text-base mt-5"
           type="button"
         >
           + Add a new Location
@@ -306,8 +315,8 @@ export const LocationSettingsModal: React.FC<LocationSettingsModalProps> = ({
             className="flex items-center justify-center gap-2 bg-[#15BA5C] w-full text-[#ffffff] py-3 rounded-[10px] font-medium text-base mt-5"
             type="button"
           >
-            <Check className="text-[14px]" />
-            <span className="">Save Locationn</span>
+            <Check className="h-4 w-4" />
+            <span>Save Location</span>
           </button>
         </div>
       </div>
