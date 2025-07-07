@@ -1,14 +1,15 @@
 import React, { useState } from "react";
 import { ChevronDown, Plus, Search } from "lucide-react";
-import { SystemDefault } from "@/types/systemDefault";
 import productManagementService from "@/services/productManagementService";
+import { useSelectedOutlet } from "@/hooks/useSelectedOutlet";
+import { SystemDefaults } from "@/types/systemDefaults";
 
 interface DropdownSelectorProps {
   searchPlaceholder: string;
   items: string[];
   placeholder?: string;
   onSelect: (item: string) => void;
-  madeFor?:SystemDefault
+  madeFor?: SystemDefaults;
 }
 
 export function DropdownSelector({
@@ -16,7 +17,7 @@ export function DropdownSelector({
   items,
   placeholder = "Select Item",
   onSelect,
-  madeFor
+  madeFor,
 }: DropdownSelectorProps) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [showAddNew, setShowAddNew] = useState<boolean>(false);
@@ -24,6 +25,7 @@ export function DropdownSelector({
   const [searchTerm, setSearchTerm] = useState("");
   const [newItem, setNewItem] = useState("");
   const [localItems, setLocalItems] = useState<string[]>(items);
+  const outletId = useSelectedOutlet()?.outlet.id;
 
   const filteredItems = localItems.filter((item) =>
     item.toLowerCase().includes(searchTerm.toLowerCase())
@@ -36,21 +38,49 @@ export function DropdownSelector({
     setSearchTerm("");
   };
 
-  const handleAddNewItem = async() => {
-    const trimmed = newItem.trim();
-    if (!trimmed || localItems.includes(trimmed)) return;
-    if(madeFor == "preparation-area"){
-
-      const response = await productManagementService.createSystemDefaults("category", trimmed);
-     console.log(response)
+  const handleAddNewItem = async () => {
+    if (!outletId) {
+      console.error("Missing outletId");
+      return;
     }
 
-    setLocalItems([...localItems, trimmed]);
-    setSelectedItem(trimmed);
-    onSelect(trimmed);
-    setNewItem("");
-    setShowAddNew(false);
-    setIsOpen(false);
+    if (!madeFor) {
+      console.error("Missing madeFor (SystemDefaults type)");
+      return;
+    }
+  
+    console.log(newItem, "Add new item")
+    const trimmed = newItem.trim();
+    if (!trimmed || localItems.includes(trimmed)) return;
+
+    if (
+      madeFor === SystemDefaults.CATEGORY ||
+      madeFor === SystemDefaults.PACKAGING_METHOD ||
+      madeFor === SystemDefaults.ALLERGENS ||
+      madeFor === SystemDefaults.PREPARATION_AREA ||
+      madeFor === SystemDefaults.WEIGHT_SCALE
+    ) {
+      try {
+        const response = await productManagementService.createSystemDefaults(
+          madeFor,
+          trimmed,
+          outletId
+        );
+        console.log(response);
+        
+
+        const updatedItems = [...localItems, trimmed];
+        setLocalItems(updatedItems);
+        setSelectedItem(trimmed);
+        onSelect(trimmed);
+      } catch (error) {
+        console.error("Failed to add new item:", error);
+      } finally {
+        setNewItem("");
+        setShowAddNew(false);
+        setIsOpen(false);
+      }
+    }
   };
 
   return (

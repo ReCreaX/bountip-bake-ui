@@ -216,9 +216,14 @@ export type Outlet = {
   updatedAt: string;
 };
 
+export enum AccessType {
+  ADMIN = "admin",
+  SUPER_AMDIN = "super_admin",
+}
+
 export type OutletAccess = {
   outlet: Outlet;
-  accessType: string;
+  accessType: AccessType;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   permissions: any;
 };

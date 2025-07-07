@@ -3,6 +3,7 @@ export enum BusinessStatus {
     INACTIVE = 'inactive',
   }
 
+  
 export type Business = {
     id: number;
     name: string;

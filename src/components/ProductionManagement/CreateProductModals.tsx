@@ -11,6 +11,7 @@ import { ApiResponseType } from "@/types/httpTypes";
 import Image from "next/image";
 import { ConvertTimeToSeconds } from "@/utils/getTimers";
 import { useProductManagementStore } from "@/stores/useProductManagementStore";
+import { SystemDefaults } from "@/types/systemDefaults";
 
 interface CreateProductModalsProps {
   onClose: () => void;
@@ -317,6 +318,7 @@ const CreateProductModals: React.FC<CreateProductModalsProps> = ({
                 <span className="text-red-600">*</span>
               </label>
               <DropdownSelector
+              madeFor={SystemDefaults.CATEGORY}
                 searchPlaceholder="Search Product Category"
                 items={categories}
                 placeholder="Select Category"
@@ -394,6 +396,7 @@ const CreateProductModals: React.FC<CreateProductModalsProps> = ({
                 <span className="text-red-600">*</span>
               </label>
               <DropdownSelector
+              madeFor={SystemDefaults.PREPARATION_AREA}
                 searchPlaceholder="Search Preparation Area"
                 items={preparationArea}
                 placeholder="Select a preparation area"
@@ -518,6 +521,7 @@ const CreateProductModals: React.FC<CreateProductModalsProps> = ({
                 <span className="text-red-600">*</span>
               </label>
               <DropdownSelector
+              madeFor={SystemDefaults.PACKAGING_METHOD}
                 searchPlaceholder="Search packaging method"
                 items={packagingMethod}
                 placeholder="Select a packaging method"

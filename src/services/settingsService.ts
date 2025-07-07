@@ -1,6 +1,10 @@
 import { HttpService } from "./httpService";
 import { COOKIE_NAMES } from "@/utils/cookiesUtils";
-import { InventoryHubType, OperatingHoursType } from "@/types/settingTypes";
+import {
+  InventoryHubType,
+  OperatingHoursType,
+  TaxApplicationType,
+} from "@/types/settingTypes";
 
 function getLabelEnabled(
   labelItems: { name: string; enabled: boolean }[],
@@ -29,7 +33,7 @@ class SettingsService {
         businessType: data.businessType,
         logoUrl: data.logoUrl,
         currency: data.currency,
-        revenueRange: data.revenueRange
+        revenueRange: data.revenueRange,
       },
       COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS
     );
@@ -107,8 +111,8 @@ class SettingsService {
     outletId,
     priceTierId,
   }: {
-    outletId: number|string;
-    priceTierId: number|string;
+    outletId: number | string;
+    priceTierId: number | string;
   }) {
     return this.request.delete(
       `/outlet/${outletId}/price-tier/${priceTierId}`,
@@ -135,8 +139,82 @@ class SettingsService {
     );
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async updateLabelSettings(formData:any, outletId: string | number, imageUrl:string) {
+  async createTask(
+    outletId: string | number,
+    name: string,
+    rate: number,
+    applicationType: TaxApplicationType
+  ) {
+    return this.request.post(
+      `/outlet/${outletId}/taxes`,
+      { name, rate, applicationType },
+      COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS
+    );
+  }
+
+  async editTask(
+    outletId: string | number,
+    tierId: string | number,
+    name: string,
+    rate: number,
+    applicationType: TaxApplicationType
+  ) {
+    return this.request.patch(
+      `/outlet/${outletId}/taxes/${tierId}`,
+      { name, rate, applicationType },
+      COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS
+    );
+  }
+
+  async deleteTask(outletId: string | number, tierId: string | number) {
+    return this.request.delete(
+      `/outlet/${outletId}/taxes/${tierId}`,
+      COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS
+    );
+  }
+
+  async createCharges(
+    outletId: string | number,
+    name: string,
+    rate: number | string,
+    applicationType: TaxApplicationType
+  ) {
+    return this.request.post(
+      `/outlet/${outletId}/service-charges`,
+      { name, rate, applicationType },
+      COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS
+    );
+  }
+
+  async editCharges(
+    outletId: string | number,
+    chargeId: string | number,
+    name: string,
+    rate: number,
+    applicationType: TaxApplicationType
+  ) {
+    return this.request.post(
+      `/outlet/${outletId}/service-charges/${chargeId}`,
+      { name, rate, applicationType },
+      COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS
+    );
+  }
+
+  async deleteCharges(
+    outletId: string | number,
+    chargeId:string | number
+  ) {
+    return this.request.post(
+      `/outlet/${outletId}/service-charges/${chargeId}`,
+      COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS
+    );
+  }
+  async updateLabelSettings(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    formData: any,
+    outletId: string | number,
+    imageUrl: string
+  ) {
     const payload = {
       customizedLogoUrl: imageUrl, // Set this if you have it
       paperSize: formData.paperSize === "tape" ? "80mm" : "A4",

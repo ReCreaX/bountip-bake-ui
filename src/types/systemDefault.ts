@@ -1,1 +1,0 @@
-export type SystemDefault = "preparation-area"| "packaging-method" | "category"

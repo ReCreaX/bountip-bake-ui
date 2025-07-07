@@ -1,7 +1,7 @@
 import { COOKIE_NAMES } from "@/utils/cookiesUtils";
 import { HttpService } from "./httpService";
 import { Product } from "@/types/product";
-import { SystemDefault } from "@/types/systemDefault";
+import { SystemDefaults } from "@/types/systemDefaults";
 
 class ProductManagementService {
   private request = new HttpService();
@@ -127,7 +127,7 @@ class ProductManagementService {
   }
 
   async fetchProductPriceHistory(
-    outletId:number,
+    outletId: number,
     productId: number,
     options?: {
       page?: number;
@@ -135,30 +135,35 @@ class ProductManagementService {
     }
   ) {
     const params = new URLSearchParams();
-  
+
     if (options?.page !== undefined)
       params.append("page", options.page.toString());
     if (options?.limit !== undefined)
       params.append("limit", options.limit.toString());
-  
+
     const queryString = params.toString() ? `?${params.toString()}` : "";
-  
+
     return this.request.get(
       `/outlets/${outletId}/products/${productId}/history${queryString}`,
       COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS
     );
   }
-  
-  async fetchSystemDefaults (key:string) {
-    return this.request.get(
-      `/system-defaults/${key}`,
+
+  async fetchSystemDefaults(key: SystemDefaults, outletId: number | string) {
+    return  await this.request.get(
+      `/${outletId}/system-defaults/${key}`,
       COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS
     );
   }
-  async createSystemDefaults (key:SystemDefault, item:string) {
-    return this.request.post(
-      `/system-defaults/${key}`,
-      {item},
+
+  async createSystemDefaults(key: SystemDefaults, item: string, outletId: number) {
+    return await this.request.post(
+      `/${outletId}/system-defaults/${key}/data`,
+      {
+        item: {
+          name: item,
+        }
+      },
       COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS
     );
   }

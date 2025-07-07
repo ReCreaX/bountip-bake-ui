@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { Product, ProductHistory } from "@/types/product";
 import productManagementService from "@/services/productManagementService";
 import { ApiResponseType } from "@/types/httpTypes";
+import { SystemDefaults } from "@/types/systemDefaults";
 
 interface ProductResponse {
   status: boolean;
@@ -13,6 +14,7 @@ interface ProductResponse {
     };
   };
 }
+
 
 interface IProductManagementStore {
   // UI State
@@ -57,17 +59,15 @@ interface IProductManagementStore {
 
   categories: string[];
   setCategories: (categories: string[]) => void;
-
-  fetchCategory: () => Promise<void>;
+  fetchCategory: (outletId: string | number) => Promise<void>;
 
   preparationArea: string[];
   setPreparationArea: (preparationArea: string[]) => void;
-  fetchPreparationArea: () => Promise<void>;
-
+  fetchPreparationArea: (outletId: string | number) => Promise<void>;
 
   packagingMethod: string[];
   setPackagingMethod: (packagingMethod: string[]) => void;
-  fetchPackagingMethod: () => Promise<void>;
+  fetchPackagingMethod: (outletId: string | number) => Promise<void>;
 }
 
 export const useProductManagementStore = create<IProductManagementStore>(
@@ -97,18 +97,16 @@ export const useProductManagementStore = create<IProductManagementStore>(
     productsPerPage: 10,
 
     // Fetch Products
-    fetchProducts: async (outletId: number, page = 1, limit = 10, search) => {
+    fetchProducts: async (outletId, page = 1, limit = 10, search = "") => {
       set({ loading: true, error: null });
 
       try {
-        const response = (await productManagementService.fetchProducts(
-          outletId,
-          {
+        const response =
+          await productManagementService.fetchProducts(outletId, {
             page,
             limit,
-            search: search || "",
-          }
-        )) as ProductResponse;
+            search,
+          }) as ProductResponse;
 
         if (response.status && response.data) {
           const { data: productsData, meta } = response.data;
@@ -131,23 +129,17 @@ export const useProductManagementStore = create<IProductManagementStore>(
         }
       } catch (err) {
         console.error("Error fetching products:", err);
-        set({
-          loading: false,
-          error: "Failed to fetch products",
-        });
+        set({ loading: false, error: "Failed to fetch products" });
       }
     },
 
     // Delete Product
-    deleteProduct: async (outletId: number, productId: number) => {
+    deleteProduct: async (outletId, productId) => {
       try {
-        const response = (await productManagementService.deleteProduct(
-          outletId,
-          productId
-        )) as ApiResponseType;
+        const response=
+          await productManagementService.deleteProduct(outletId, productId) as ApiResponseType;
 
         if (response.status) {
-          // Replace `true` with `response.status` when uncommenting API call
           const state = get();
           const updatedProducts = state.products.filter(
             (p) => p.id !== productId
@@ -178,7 +170,7 @@ export const useProductManagementStore = create<IProductManagementStore>(
     },
 
     // Update Product Status
-    updateProductStatus: (productId: number, isActive: boolean) => {
+    updateProductStatus: (productId, isActive) => {
       const state = get();
 
       const updateProductInArray = (products: Product[]) =>
@@ -197,7 +189,7 @@ export const useProductManagementStore = create<IProductManagementStore>(
     },
 
     // Add Product
-    addProduct: (product: Product) => {
+    addProduct: (product) => {
       const state = get();
       set({
         products: [product, ...state.products],
@@ -207,7 +199,7 @@ export const useProductManagementStore = create<IProductManagementStore>(
     },
 
     // Update Product
-    updateProduct: (updatedProduct: Product) => {
+    updateProduct: (updatedProduct) => {
       const state = get();
 
       const updateProductInArray = (products: Product[]) =>
@@ -226,12 +218,10 @@ export const useProductManagementStore = create<IProductManagementStore>(
     },
 
     // Pagination control
-    setCurrentPage: (page: number) => {
-      set({ currentPage: page });
-    },
+    setCurrentPage: (page) => set({ currentPage: page }),
 
     // Clear all product data
-    clearProducts: () => {
+    clearProducts: () =>
       set({
         products: [],
         allProducts: [],
@@ -240,18 +230,15 @@ export const useProductManagementStore = create<IProductManagementStore>(
         currentPage: 1,
         loading: false,
         error: null,
-      });
-    },
+      }),
 
     // Reset error state
-    resetError: () => {
-      set({ error: null });
-    },
+    resetError: () => set({ error: null }),
 
-    fetchProductPriceHistory: async (productId: number) => {
+    // Fetch Price History
+    fetchProductPriceHistory: async (productId) => {
       try {
-        const state = get();
-        const outletId = state.selectedProduct?.outletId;
+        const outletId = get().selectedProduct?.outletId;
 
         if (!outletId) {
           set({ error: "No outlet ID available for fetching price history" });
@@ -259,17 +246,14 @@ export const useProductManagementStore = create<IProductManagementStore>(
         }
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const response: any =
+        const response:any =
           await productManagementService.fetchProductPriceHistory(
             outletId,
             productId
           );
 
         if (response.status && response.data?.data) {
-          set({
-            selectedProductPriceHistory: response.data.data,
-            error: null,
-          });
+          set({ selectedProductPriceHistory: response.data.data, error: null });
         } else {
           set({
             selectedProductPriceHistory: [],
@@ -285,21 +269,22 @@ export const useProductManagementStore = create<IProductManagementStore>(
       }
     },
 
+    // Categories
     categories: [],
-    setCategories: (categories: string[]) => set({ categories }),
+    setCategories: (categories) => set({ categories }),
 
-    fetchCategory: async () => {
+    fetchCategory: async (outletId) => {
       try {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const response:any = await productManagementService.fetchSystemDefaults(
-          "category"
-        );
-        console.log("Fetched categories:", response);
+        const response:any=
+          await productManagementService.fetchSystemDefaults(
+SystemDefaults.CATEGORY,
+            outletId
+          );
 
         if (response.status && response.data?.data) {
-          const categoryNames = response.data.data.map(
-            (item: { name: string }) => item.name
-          );
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const categoryNames = response.data.data.map((item:any) => item.name);
           set({ categories: categoryNames });
         } else {
           console.error("Failed to fetch categories:", response.message);
@@ -311,57 +296,56 @@ export const useProductManagementStore = create<IProductManagementStore>(
       }
     },
 
+    // Preparation Area
     preparationArea: [],
-    setPreparationArea: (preparationArea: string[]) => set({ preparationArea }),
+    setPreparationArea: (preparationArea) => set({ preparationArea }),
 
-    fetchPreparationArea: async () => {
+    fetchPreparationArea: async (outletId) => {
       try {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const response:any = await productManagementService.fetchSystemDefaults(
-          "preparation-area"
-        );
-        console.log("Fetched categories:", response);
+        const response:any =
+          await productManagementService.fetchSystemDefaults(
+SystemDefaults.PREPARATION_AREA,
+            outletId
+          );
 
         if (response.status && response.data?.data) {
-          const preparationArea = response.data.data.map(
-            (item: { name: string }) => item.name
-          );
-          set({ preparationArea: preparationArea });
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const preparationArea = response.data.data.map((item:any) => item.name);
+          set({ preparationArea });
         } else {
-          console.error("Failed to fetch categories:", response.message);
+          console.error("Failed to fetch preparation areas:", response.message);
           set({ preparationArea: [] });
         }
       } catch (error) {
-        console.error("Error fetching categories:", error);
+        console.error("Error fetching preparation areas:", error);
         set({ preparationArea: [] });
       }
     },
 
-
-
-
+    // Packaging Method
     packagingMethod: [],
-    setPackagingMethod: (packagingMethod: string[]) => set({ packagingMethod }),
+    setPackagingMethod: (packagingMethod) => set({ packagingMethod }),
 
-    fetchPackagingMethod: async () => {
+    fetchPackagingMethod: async (outletId) => {
       try {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const response:any = await productManagementService.fetchSystemDefaults(
-          "packaging-method"
-        );
-        console.log("Fetched categories:", response);
+        const response:any =
+          await productManagementService.fetchSystemDefaults(
+            SystemDefaults.PACKAGING_METHOD,
+            outletId
+          );
 
         if (response.status && response.data?.data) {
-          const packagingMethod = response.data.data.map(
-            (item: { name: string }) => item.name
-          );
-          set({ packagingMethod: packagingMethod });
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const packagingMethod = response.data.data.map((item:any) => item.name);
+          set({ packagingMethod });
         } else {
-          console.error("Failed to fetch categories:", response.message);
+          console.error("Failed to fetch packaging methods:", response.message);
           set({ packagingMethod: [] });
         }
       } catch (error) {
-        console.error("Error fetching categories:", error);
+        console.error("Error fetching packaging methods:", error);
         set({ packagingMethod: [] });
       }
     },

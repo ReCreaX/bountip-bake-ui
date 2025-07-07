@@ -120,7 +120,43 @@ export interface InventoryHubType{
   address?:string;
   region?:string;
   isActive:boolean
+}
 
+export enum TaxApplicationType {
+  INCLUDED = "included",
+  CHECKOUT = "checkout",
+  OPTIONAL = "optional",
+}
 
+export enum TransferStatus {
+  PENDING = "pending",
+  COMPLETED = "completed",
+  CANCELLED = "cancelled",
+  IN_TRANSIT = "in_transit",
+  RETURNED = "returned",
+}
+
+export enum TransaferMethod {
+  PICKUP = "pickup",
+  DISPATCH = "dispatch",
+  DIRECT = "direct",
+}
+
+export enum PrintOrientation {
+  PORTRAIT = "portrait",
+  LANDSCAPE = "landscape",
+}
+
+export enum LabelType {
+  PRODUCT = "product",
+  BATCH = "batch",
+  DISPATCH = "dispatch",
+  INVENTORY = "inventory",
+}
+
+export enum PrintFormat {
+  PDF = "pdf",
+  THERMAL = "thermal",
+  LASER = "laser",
 }
 
