@@ -1,7 +1,5 @@
-import AssetsFiles from "@/assets";
 import InventoryNavigation from "@/components/Inventory/InventoryNavigation";
 import { CloudUpload, MoveUpRight, Plus, Share2 } from "lucide-react";
-import Image from "next/image";
 import { PiTrashFill } from "react-icons/pi";
 
 const InventoryPage = () => {
