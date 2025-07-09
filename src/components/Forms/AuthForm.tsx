@@ -370,16 +370,32 @@ const AuthForm = ({ mode }: Props) => {
 
   const handleGoogleOauth = async () => {
     try {
-      const response = await authService.googleOauth();
-      console.log(response);
+      setIsLoading(true);
+
+      if (!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID) {
+        toast.error("Google OAuth is not configured", {
+          duration: 4000,
+          position: "bottom-right",
+        });
+        return;
+      }
+
+      // Call the authService method which will redirect to Google
+      await authService.startGoogleOauth();
     } catch (error) {
       console.error("Google OAuth error:", error);
-      toast.error("Google OAuth failed", {
-        duration: 4000,
-        position: "bottom-right",
-      });
+      toast.error(
+        error instanceof Error ? error.message : "Google OAuth failed",
+        {
+          duration: 4000,
+          position: "bottom-right",
+        }
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
+  
 
   useEffect(() => {
     console.log("❗ Form errors:", errors);

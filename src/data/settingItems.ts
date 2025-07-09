@@ -33,15 +33,15 @@ const settingsItems:ISettingItem[] = [
     },
     {
       id: "operating-hours",
-      title: "Operating Hours",
-      description: "Manage operating hours",
+      title: "Opening Hours",
+      description: "Manage opening hours",
       icon: SettingFiles.OperatingHours,
       color: "border border-[#15BA5C] text-green-600",
     },
     {
       id: "inventory-hub",
       title: "Inventory Hub",
-      description: "Centralize your inventory",
+      description: "Customize your inventory",
       icon: SettingFiles.InventoryIcon,
       color: "border border-[#15BA5C] text-green-600",
     },

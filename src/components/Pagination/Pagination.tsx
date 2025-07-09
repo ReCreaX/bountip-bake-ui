@@ -6,6 +6,9 @@ interface PaginationProps {
   totalPages: number;
   onPageChange: (page: number) => void;
   maxVisiblePages?: number;
+  entriesPerPage?: number;
+  totalEntries?: number;
+  onEntriesPerPageChange?: (entries: number) => void;
 }
 
 const Pagination: React.FC<PaginationProps> = ({
@@ -13,6 +16,9 @@ const Pagination: React.FC<PaginationProps> = ({
   totalPages,
   onPageChange,
   maxVisiblePages = 7,
+  entriesPerPage = 10,
+  totalEntries = 100,
+  onEntriesPerPageChange,
 }) => {
   const getVisiblePages = () => {
     if (totalPages <= maxVisiblePages) {
@@ -40,27 +46,33 @@ const Pagination: React.FC<PaginationProps> = ({
   const showEndEllipsis =
     visiblePages[visiblePages.length - 1] < totalPages - 1;
 
+  const startEntry = (currentPage - 1) * entriesPerPage + 1;
+  const endEntry = Math.min(currentPage * entriesPerPage, totalEntries);
+
   return (
-    <div className="flex w-full justify-between items-center space-x-1 bg-[#1C1B20] px-3 py-2 rounded-b-lg">
+    <div className="flex w-full justify-between items-center bg-white border-t border-gray-200 px-6 py-4">
+      {/* Previous Button */}
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="flex items-center px-3 py-2 text-sm font-medium text-white bg-[#15BA5C] rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50 transition-colors"
       >
-        <ChevronLeft className="w-4 h-4 mr-1" />
+        <ChevronLeft className="w-4 h-4" />
         Previous
       </button>
-      <div className="">
+
+      {/* Page Numbers */}
+      <div className="flex items-center gap-1">
         {visiblePages[0] > 1 && (
           <>
             <button
               onClick={() => onPageChange(1)}
-              className="px-3 py-2 text-sm font-medium text-white hover:bg-gray-700 rounded-md transition-colors"
+              className="px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
             >
               1
             </button>
             {showStartEllipsis && (
-              <span className="px-2 py-2 text-sm text-gray-400">...</span>
+              <span className="px-2 py-2 text-sm text-gray-500">...</span>
             )}
           </>
         )}
@@ -69,10 +81,10 @@ const Pagination: React.FC<PaginationProps> = ({
           <button
             key={page}
             onClick={() => onPageChange(page)}
-            className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+            className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
               page === currentPage
-                ? "bg-[#15BA5C] text-white"
-                : "text-white hover:bg-gray-700"
+                ? "bg-green-600 text-white"
+                : "text-gray-700 hover:bg-gray-50"
             }`}
           >
             {page}
@@ -82,11 +94,11 @@ const Pagination: React.FC<PaginationProps> = ({
         {visiblePages[visiblePages.length - 1] < totalPages && (
           <>
             {showEndEllipsis && (
-              <span className="px-2 py-2 text-sm text-gray-400">...</span>
+              <span className="px-2 py-2 text-sm text-gray-500">...</span>
             )}
             <button
               onClick={() => onPageChange(totalPages)}
-              className="px-3 py-2 text-sm font-medium text-white hover:bg-gray-700 rounded-md transition-colors"
+              className="px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
             >
               {totalPages}
             </button>
@@ -94,14 +106,33 @@ const Pagination: React.FC<PaginationProps> = ({
         )}
       </div>
 
-      <button
-        onClick={() => onPageChange(currentPage + 1)}
-        disabled={currentPage === totalPages}
-        className="flex items-center px-3 py-2 text-sm font-medium text-white bg-[#15BA5C] rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-      >
-        Next
-        <ChevronRight className="w-4 h-4 ml-1" />
-      </button>
+      {/* Next Button and Entries Info */}
+      <div className="flex items-center gap-4">
+        <button
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50 transition-colors"
+        >
+          Next
+          <ChevronRight className="w-4 h-4" />
+        </button>
+
+        <div className="flex items-center gap-2 text-sm text-gray-600">
+          <span>
+            Showing {startEntry}–{endEntry} of {totalEntries} entries
+          </span>
+          <select
+            value={entriesPerPage}
+            onChange={(e) => onEntriesPerPageChange?.(parseInt(e.target.value))}
+            className="border border-gray-300 rounded px-2 py-1 text-sm"
+          >
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+        </div>
+      </div>
     </div>
   );
 };
