@@ -48,7 +48,7 @@ const settingsItems:ISettingItem[] = [
     {
       id: "account-settings",
       title: "Account Settings",
-      description: "Customize preferences",
+      description: "Manage your tax and service charge",
       icon: SettingFiles.AccountSettings,
       color: "border border-[#15BA5C] text-green-600",
     },
