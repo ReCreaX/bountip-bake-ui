@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import { COOKIE_NAMES, getCookie, setCookie } from "@/utils/cookiesUtils";
 import authService from "@/services/authServices";
 import { UserType } from "@/types/userTypes";
+import GoogleSignIn from "../GoogleSignIn";
 
 type Props = {
   mode: "signin" | "signup";
@@ -368,33 +369,7 @@ const AuthForm = ({ mode }: Props) => {
     }
   };
 
-  const handleGoogleOauth = async () => {
-    try {
-      setIsLoading(true);
-
-      if (!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID) {
-        toast.error("Google OAuth is not configured", {
-          duration: 4000,
-          position: "bottom-right",
-        });
-        return;
-      }
-
-      // Call the authService method which will redirect to Google
-      await authService.startGoogleOauth();
-    } catch (error) {
-      console.error("Google OAuth error:", error);
-      toast.error(
-        error instanceof Error ? error.message : "Google OAuth failed",
-        {
-          duration: 4000,
-          position: "bottom-right",
-        }
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
+ 
   
 
   useEffect(() => {
@@ -565,16 +540,14 @@ const AuthForm = ({ mode }: Props) => {
         {(mode === "signup" || (mode === "signin" && !pinLogin)) && (
           <div
             className={`flex items-center border ${
-              (
-                (mode === "signup"
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  ? (errors as Partial<Record<keyof SignupFormValues, any>>)
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  : (errors as Partial<Record<keyof SigninFormValues, any>>)
-                ).email
-                  ? "border-red-400"
-                  : "border-[#E6E6E6]"
-              )
+              (mode === "signup"
+                ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  (errors as Partial<Record<keyof SignupFormValues, any>>)
+                : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  (errors as Partial<Record<keyof SigninFormValues, any>>)
+              ).email
+                ? "border-red-400"
+                : "border-[#E6E6E6]"
             } rounded-xl p-4 w-full`}
           >
             <Mail className="text-[#1E1E1E]" />
@@ -642,8 +615,9 @@ const AuthForm = ({ mode }: Props) => {
         {lockoutTimer > 0 && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-3">
             <p className="text-red-600 text-sm text-center">
-              Account temporarily locked due to multiple failed attempts. 
-              Please try again in {Math.ceil(lockoutTimer / 60)} minutes and {lockoutTimer % 60} seconds.
+              Account temporarily locked due to multiple failed attempts. Please
+              try again in {Math.ceil(lockoutTimer / 60)} minutes and{" "}
+              {lockoutTimer % 60} seconds.
             </p>
           </div>
         )}
@@ -655,7 +629,7 @@ const AuthForm = ({ mode }: Props) => {
             type="button"
             className={`text-white font-bold text-xl py-3.5 rounded-[10px] transition-colors ${
               isSubmitDisabled()
-                ? "bg-gray-400 cursor-not-allowed" 
+                ? "bg-gray-400 cursor-not-allowed"
                 : "bg-[#15BA5C] hover:bg-[#13a551]"
             }`}
             onClick={handlePinLoginClick}
@@ -668,7 +642,7 @@ const AuthForm = ({ mode }: Props) => {
           <button
             className={`text-white font-bold text-xl py-3.5 rounded-[10px] transition-colors ${
               isSubmitDisabled()
-                ? "bg-gray-400 cursor-not-allowed" 
+                ? "bg-gray-400 cursor-not-allowed"
                 : "bg-[#15BA5C] hover:bg-[#13a551]"
             }`}
             type="submit"
@@ -760,9 +734,7 @@ const AuthForm = ({ mode }: Props) => {
         {!pinLogin && (
           <div className="flex items-center w-full my-4">
             <hr className="flex-grow border-t border-gray-300" />
-            <span className="mx-4 text-sm text-gray-500">
-              Or Continue With
-            </span>
+            <span className="mx-4 text-sm text-gray-500">Or Continue With</span>
             <hr className="flex-grow border-t border-gray-300" />
           </div>
         )}
@@ -783,18 +755,19 @@ const AuthForm = ({ mode }: Props) => {
 
         {/* Google OAuth button - Hide during PIN login */}
         {!pinLogin && (
-          <button
-            type="button"
-            className="flex items-center justify-center gap-2 border py-3.5 rounded-[10px] border-[#E6E6E6] hover:bg-gray-50 transition-colors"
-            onClick={handleGoogleOauth}
-          >
-            <Image src={AssetsFiles.GoogleIcon} alt="Google Icon" />
-            <span className="text-[#1E1E1E] text-[17px] font-normal">
-              {mode === "signup"
-                ? "Sign Up With Google"
-                : "Login With Google"}
-            </span>
-          </button>
+          // <button
+          //   type="button"
+          //   className="flex items-center justify-center gap-2 border py-3.5 rounded-[10px] border-[#E6E6E6] hover:bg-gray-50 transition-colors"
+          //   onClick={handleGoogleOauth}
+          // >
+          //   <Image src={AssetsFiles.GoogleIcon} alt="Google Icon" />
+          //   <span className="text-[#1E1E1E] text-[17px] font-normal">
+          //     {mode === "signup"
+          //       ? "Sign Up With Google"
+          //       : "Login With Google"}
+          //   </span>
+          // </button>
+          <GoogleSignIn mode={mode} />
         )}
 
         {/* Sign up/Sign in toggle */}

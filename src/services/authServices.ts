@@ -63,6 +63,9 @@ class AuthService {
     });
   }
 
+  async googleLogin (firebaseUserId:string){
+    return this.request.post("/auth/google-login", { idToken:firebaseUserId });
+  }
   /**
    * Starts Google OAuth flow by redirecting user to Google's auth URL
    */
