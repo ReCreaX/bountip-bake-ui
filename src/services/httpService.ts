@@ -52,7 +52,7 @@ export class HttpService {
   }
 
   private async requestWithRetry<T>(
-    method: "GET" | "POST" | "PATCH",
+    method: "GET" | "POST" | "PATCH" | "DELETE",
     path: string,
     data: unknown = null,
     cookieName?: COOKIE_NAMES
@@ -73,7 +73,9 @@ export class HttpService {
       return fetch(`${this.baseUrl}${path}`, {
         method,
         headers,
-        ...(method === "POST" || method === "PATCH" ? { body: JSON.stringify(data) } : {}),
+        ...(method === "POST" || method === "PATCH"
+          ? { body: JSON.stringify(data) }
+          : {}),
       });
     };
 
@@ -104,7 +106,10 @@ export class HttpService {
     return this.requestWithRetry<T>("POST", path, data, cookieName);
   }
 
-  async get<T>(path: string, cookieName?: COOKIE_NAMES): Promise<T | HttpError> {
+  async get<T>(
+    path: string,
+    cookieName?: COOKIE_NAMES
+  ): Promise<T | HttpError> {
     return this.requestWithRetry<T>("GET", path, undefined, cookieName);
   }
 
@@ -114,6 +119,13 @@ export class HttpService {
     cookieName?: COOKIE_NAMES
   ): Promise<T | HttpError> {
     return this.requestWithRetry<T>("PATCH", path, data, cookieName);
+  }
+
+  async delete<T>(
+    path: string,
+    cookieName?: COOKIE_NAMES
+  ): Promise<T | HttpError> {
+    return this.requestWithRetry<T>("DELETE", path, null, cookieName);
   }
 
   async upload<T>(
@@ -137,7 +149,7 @@ export class HttpService {
 
       //return fetch(`${this.baseUrl}${path}`, {
       return fetch(`https://seal-app-wzqhf.ondigitalocean.app${path}`, {
-     // return fetch(`http://localhost:8000${path}`, {
+       //return fetch(`http://localhost:8000${path}`, {
         method: "POST",
         // headers,
         body: formData,

@@ -2,21 +2,23 @@ import SettingFiles from "@/assets/icons/settings";
 import { Modal } from "../ui/Modal";
 import { useState } from "react";
 import { Input } from "../ui/Input";
-import { Button } from "../ui/Button";
 import settingsService from "@/services/settingsService";
 import { ApiResponseType } from "@/types/httpTypes";
 import { toast } from "sonner";
 import { HubType } from "@/types/settingTypes";
+import { useBusiness } from "@/hooks/useBusiness";
 
 export const InventoryHubModal: React.FC<{
   isOpen: boolean;
   onClose: () => void;
-  businessId: string;
-}> = ({ isOpen, onClose, businessId }) => {
+}> = ({ isOpen, onClose }) => {
+  
   const [formData, setFormData] = useState({
     name: "",
     location: "",
   });
+  const businessId = useBusiness()?.id;
+  if (!businessId) return;
 
   const handleCreateInventory = async () => {
     const result = (await settingsService.addInventoryHub({
@@ -64,9 +66,9 @@ export const InventoryHubModal: React.FC<{
           placeholder="Enter Location"
         />
 
-        <Button onClick={handleCreateInventory} className="w-full">
+        <button type="button" onClick={handleCreateInventory} className="w-full bg-[#15BA5C] py-[9.8px] text-white rounded-[9.8px]">
           Create Inventory Hub
-        </Button>
+        </button>
       </div>
     </Modal>
   );

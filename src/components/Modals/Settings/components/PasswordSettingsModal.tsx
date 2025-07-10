@@ -6,6 +6,8 @@ import { Eye, EyeOff } from "lucide-react";
 import SettingFiles from "@/assets/icons/settings";
 import settingsService from "@/services/settingsService";
 import { toast } from "sonner";
+import { COOKIE_NAMES, removeCookie } from "@/utils/cookiesUtils";
+import { useRouter } from "next/navigation";
 
 interface PasswordSettingsModalProps {
   isOpen: boolean;
@@ -17,7 +19,6 @@ type PasswordSettingsRespone = {
   data?: null;
 };
 
-// status: true, message: 'User Password updated successfully', data: null}
 
 export const PasswordSettingsModal: React.FC<PasswordSettingsModalProps> = ({
   isOpen,
@@ -28,6 +29,7 @@ export const PasswordSettingsModal: React.FC<PasswordSettingsModalProps> = ({
     newPassword: "",
     confirmPassword: "",
   });
+  const router = useRouter();
 
   const [showPasswords, setShowPasswords] = useState({
     current: false,
@@ -67,7 +69,9 @@ export const PasswordSettingsModal: React.FC<PasswordSettingsModalProps> = ({
           duration: 3000,
           position: "top-right",
         });
-        
+        removeCookie(COOKIE_NAMES.BOUNTIP_LOGIN_USER);
+              removeCookie(COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS);
+              router.push("/auth?signin");
         return;
       }
       toast.error("Incorrect credentials - failed to update password", {
@@ -223,7 +227,7 @@ export const PasswordSettingsModal: React.FC<PasswordSettingsModalProps> = ({
           </button>
         </div>
 
-        <Button type="submit" className="w-full">
+        <Button onClick={handleSubmit} type="submit" className="w-full">
           Update Password
         </Button>
       </form>

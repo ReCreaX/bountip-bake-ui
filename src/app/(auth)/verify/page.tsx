@@ -85,6 +85,7 @@ const VerifyPage = () => {
       email: user.email,
       otp: otpCode,
     };
+    
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const response: any = await authService.verifyEmail(data);
     console.log(response);

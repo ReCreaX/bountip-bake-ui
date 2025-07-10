@@ -20,7 +20,13 @@ import ReportAnalyticsIcon from "@/assets/icons/ReportAnalyticsIcon.svg";
 import RolesIcon from "@/assets/icons/RolesIcon.svg";
 import DistributionIcon from "@/assets/icons/DistributionIcon.svg";
 
+//Page Icons SVG
+import ProductionManagementIcon from "@/assets/icons/ProductionManagementIcon.svg";
+import NoProduct from "@/assets/images/NoProducts.svg";
+import AtmCard from "@/assets/images/AtmCard.svg";
 
+//Product Management Icons SVG
+import CsvCheck from "@/assets/icons/product-management/CsvCheckMark.svg";
 
 const AssetsFiles = {
   EmailImage,
@@ -42,6 +48,14 @@ const AssetsFiles = {
   ReportAnalyticsIcon,
   DistributionIcon,
   RolesIcon,
+
+  //Page Icons
+  ProductionManagementIcon,
+  NoProduct,
+  AtmCard,
+
+  //Product Management
+  CsvCheck,
 };
 
 export default AssetsFiles;

@@ -187,7 +187,7 @@ const BusinessRevenueComponent: React.FC<BusinessRevenueComponentProps> = ({
         </div>
       </div>
 
-      {/* File Upload Section */}
+      {/* File Upload  Section */}
       <div>
         <h3 className="text-lg font-medium text-gray-900 mb-4">
           Upload your Business Logo

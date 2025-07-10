@@ -1,14 +1,21 @@
 import SettingFiles from "@/assets/icons/settings";
 import { Modal } from "../ui/Modal";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dropdown } from "../ui/Dropdown";
 import { Check, Plus } from "lucide-react";
+import { useProductManagementStore } from "@/stores/useProductManagementStore";
+import { useSelectedOutlet } from "@/hooks/useSelectedOutlet";
+import { TaxApplicationType } from "@/types/settingTypes";
+import settingsService from "@/services/settingsService";
 
 export const AccountSettingsModal: React.FC<{
   isOpen: boolean;
   onClose: () => void;
 }> = ({ isOpen, onClose }) => {
   const [activeTab, setActiveTab] = useState<"taxes" | "service">("taxes");
+  const { fetchCategory } = useProductManagementStore();
+  const outlet = useSelectedOutlet();
+  const outletId = outlet?.outlet.id as unknown as string;
   const [taxes, setTaxes] = useState<TaxItem[]>([
     {
       id: "1",
@@ -21,6 +28,10 @@ export const AccountSettingsModal: React.FC<{
       selectedCategories: {},
     },
   ]);
+
+  useEffect(() => {
+    fetchCategory(outletId);
+  }, []);
 
   const [categories, setCategories] = useState<DropdownOption[]>([
     { value: "bread", label: "Bread" },
@@ -291,51 +302,6 @@ const TaxItemComponent: React.FC<TaxItemComponentProps> = ({
             </label>
           </div>
         </div>
-
-        <div className="flex items-center">
-          <div className="relative">
-            <input
-              type="checkbox"
-              id={`applyAtOrderCheckoutOptional-${tax.id}`}
-              checked={tax.applyAtOrderCheckoutOptional}
-              onChange={(e) =>
-                onUpdate(tax.id, {
-                  applyAtOrderCheckoutOptional: e.target.checked,
-                })
-              }
-              className="sr-only"
-            />
-            <label
-              htmlFor={`applyAtOrderCheckoutOptional-${tax.id}`}
-              className="flex items-center cursor-pointer"
-            >
-              <div
-                className={`w-4 h-4 rounded border-2 mr-3 flex items-center justify-center ${
-                  tax.applyAtOrderCheckoutOptional
-                    ? "border-[#15BA5C] bg-[#15BA5C]"
-                    : "border-gray-300"
-                }`}
-              >
-                {tax.applyAtOrderCheckoutOptional && (
-                  <svg
-                    className="w-3 h-3 text-white"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                )}
-              </div>
-              <span className="text-sm text-gray-700">
-                Apply Tax at order checkout (optional)
-              </span>
-            </label>
-          </div>
-        </div>
       </div>
 
       <div className="space-y-4">
@@ -467,19 +433,23 @@ const TaxItemComponent: React.FC<TaxItemComponentProps> = ({
 const ServiceCharge: React.FC = ({}) => {
   const [serviceName, setServiceName] = useState("");
   const [serviceRate, setServiceRate] = useState("");
-  const [selectedOption, setSelectedOption] = useState<
-    "menu" | "checkout" | "tax"
-  >("menu");
+  const [selectedOption, setSelectedOption] = useState<TaxApplicationType>(
+    TaxApplicationType.INCLUDED
+  );
+  const outlet = useSelectedOutlet();
+  const outletId = outlet?.outlet.id as unknown as string;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    console.log(outletId, serviceName, Number(serviceRate), selectedOption);
     e.preventDefault();
-    // if (onCreateServiceCharge) {
-    //   onCreateServiceCharge({
-    //     name: serviceName,
-    //     rate: parseFloat(serviceRate) || 0,
-    //     type: selectedOption,
-    //   });
-    // }
+    if (!outletId) return null;
+    const response = await settingsService.createCharges(
+      outletId,
+      serviceName,
+      Number(serviceRate),
+      selectedOption
+    );
+    console.log(response, "This is the response");
   };
 
   return (
@@ -539,8 +509,12 @@ const ServiceCharge: React.FC = ({}) => {
                   id="includeMenu"
                   name="serviceChargeOption"
                   value="menu"
-                  checked={selectedOption === "menu"}
-                  onChange={(e) => setSelectedOption(e.target.value as "menu")}
+                  checked={selectedOption === TaxApplicationType.INCLUDED}
+                  onChange={(e) =>
+                    setSelectedOption(
+                      e.target.value as TaxApplicationType.INCLUDED
+                    )
+                  }
                   className="sr-only"
                 />
                 <label
@@ -549,12 +523,12 @@ const ServiceCharge: React.FC = ({}) => {
                 >
                   <div
                     className={`w-4 h-4 rounded-full border-2 mr-3 flex items-center justify-center ${
-                      selectedOption === "menu"
+                      selectedOption === TaxApplicationType.INCLUDED
                         ? "border-green-500 bg-green-500"
                         : "border-gray-300"
                     }`}
                   >
-                    {selectedOption === "menu" && (
+                    {selectedOption === TaxApplicationType.INCLUDED && (
                       <div className="w-2 h-2 rounded-full bg-white"></div>
                     )}
                   </div>
@@ -574,7 +548,9 @@ const ServiceCharge: React.FC = ({}) => {
                   value="checkout"
                   checked={selectedOption === "checkout"}
                   onChange={(e) =>
-                    setSelectedOption(e.target.value as "checkout")
+                    setSelectedOption(
+                      e.target.value as TaxApplicationType.CHECKOUT
+                    )
                   }
                   className="sr-only"
                 />
@@ -584,7 +560,7 @@ const ServiceCharge: React.FC = ({}) => {
                 >
                   <div
                     className={`w-4 h-4 rounded-full border-2 mr-3 flex items-center justify-center ${
-                      selectedOption === "checkout"
+                      selectedOption === TaxApplicationType.CHECKOUT
                         ? "border-green-500 bg-green-500"
                         : "border-gray-300"
                     }`}
@@ -607,8 +583,12 @@ const ServiceCharge: React.FC = ({}) => {
                   id="applyTax"
                   name="serviceChargeOption"
                   value="tax"
-                  checked={selectedOption === "tax"}
-                  onChange={(e) => setSelectedOption(e.target.value as "tax")}
+                  checked={selectedOption === TaxApplicationType.OPTIONAL}
+                  onChange={(e) =>
+                    setSelectedOption(
+                      e.target.value as TaxApplicationType.OPTIONAL
+                    )
+                  }
                   className="sr-only"
                 />
                 <label
@@ -617,12 +597,12 @@ const ServiceCharge: React.FC = ({}) => {
                 >
                   <div
                     className={`w-4 h-4 rounded-full border-2 mr-3 flex items-center justify-center ${
-                      selectedOption === "tax"
+                      selectedOption === TaxApplicationType.OPTIONAL
                         ? "border-green-500 bg-green-500"
                         : "border-gray-300"
                     }`}
                   >
-                    {selectedOption === "tax" && (
+                    {selectedOption === TaxApplicationType.OPTIONAL && (
                       <div className="w-2 h-2 rounded-full bg-white"></div>
                     )}
                   </div>
@@ -639,6 +619,7 @@ const ServiceCharge: React.FC = ({}) => {
       </div>
 
       <button
+        onClick={handleSubmit}
         type="submit"
         className="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-4 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
       >

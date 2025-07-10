@@ -7,29 +7,37 @@ import Image from "next/image";
 import { LogOut, Settings } from "lucide-react";
 import { DashboardSidebarNavigationData } from "@/data/SidebarNavigationData";
 import AssetsFiles from "@/assets";
-import { COOKIE_NAMES, getCookie } from "@/utils/cookiesUtils";
-import { UserType } from "@/types/userTypes";
 import { useModalStore } from "@/stores/useUIStore";
 import TooltipWrapper from "../ToolTip/TooltipWrapper";
+import { useSelectedOutlet } from "@/hooks/useSelectedOutlet";
+import { getRole } from "@/utils/getRolesType";
+import { COOKIE_NAMES, removeCookie } from "@/utils/cookiesUtils";
+import { useRouter } from "next/navigation";
+
 
 const DashboardSidebarLayout = () => {
   const { showFullDashboardSidebar } = useModalStore();
   const pathname = usePathname();
   const activeId = pathname.split("/")[1] || "dashboard";
   const [settingsOpen, setSettingsOpen] = useState(false);
+   const router = useRouter();
   // const user = getCookie<UserType>("bountipLoginUser");
-  const user = getCookie<UserType>(COOKIE_NAMES.BOUNTIP_LOGIN_USER);
+  // const user = getCookie<UserType>(COOKIE_NAMES.BOUNTIP_LOGIN_USER);
+  const outlets = useSelectedOutlet()
+   if(!outlets) return;
 
   const sidebarWidth = showFullDashboardSidebar ? "w-[300px]" : "w-20";
+  const handleLogOut = () => {
+      removeCookie(COOKIE_NAMES.BOUNTIP_LOGIN_USER_TOKENS);
+      router.push("/auth?signin");
+    };
 
   return (
     <section
       className={`bg-white h-full ${sidebarWidth} transition-all duration-300`}
     >
       <section>
-        <p className="text-sm font-semibold px-6 pt-4 text-[#A6A6A6] ">Menu</p>
 
-        <hr className="my-2 text-[#E6E6E6]" />
 
         <nav className="flex flex-col gap-2 px-2 pb-4">
           {DashboardSidebarNavigationData.map((item) => {
@@ -109,10 +117,10 @@ const DashboardSidebarLayout = () => {
         <div className="mt-4 px-3 flex flex-col gap-4 text-sm text-[#4B4B4B]">
           <div
             className="flex items-center gap-3"
-            title={user?.fullName || "User"}
+            title={outlets?.outlet.name || "User"}
           >
             <Image
-              src={AssetsFiles.UserPerson}
+              src={ outlets?.outlet.logoUrl|| AssetsFiles.UserPerson}
               className="h-[48px] w-[48px] rounded-full"
               alt="User"
               width={48}
@@ -120,14 +128,14 @@ const DashboardSidebarLayout = () => {
             />
             {showFullDashboardSidebar && (
               <div>
-                <p className="font-medium">{user?.fullName}</p>
-                <p className="text-xs text-gray-500">Admin Manager</p>
+                <p className="font-medium">{outlets?.outlet.name}</p>
+                <p className="text-xs text-gray-500">{getRole(outlets?.accessType)}</p>
               </div>
             )}
           </div>
 
           {showFullDashboardSidebar ? (
-            <button className="flex items-center gap-2 text-red-500 text-sm py-3.5 cursor-pointer">
+            <button onClick={handleLogOut} className="flex items-center gap-2 text-red-500 text-sm py-3.5 cursor-pointer hover:bg-red-50 hover:rounded-[10px] px-1.5">
               <LogOut className="w-5 h-5" />
               <span>Log Out</span>
             </button>

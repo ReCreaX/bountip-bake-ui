@@ -28,6 +28,7 @@ export default function SuccessModal() {
     console.log("Testing this");
     setShowSignUpSuccessModal(false);
     router.push(`/onboarding`);
+    
     removeCookie(COOKIE_NAMES.REG_USER_EMAIL,)
     //removeCookie("regUserEmail");
   };
