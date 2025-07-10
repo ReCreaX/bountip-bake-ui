@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { ApiResponseType } from "@/types/httpTypes";
 import { useBusiness } from "@/hooks/useBusiness";
 import { usePureOutlets } from "@/hooks/useSelectedOutlet";
+import { useBusinessStore } from "@/stores/useBusinessStore";
 
 interface OperatingHoursModalProps {
   isOpen: boolean;
@@ -29,7 +30,6 @@ interface DayHours {
   closeTime: string;
 }
 
-// Custom TimeInput component
 const TimeInput: React.FC<{
   value: string;
   onChange: (value: string) => void;
@@ -43,9 +43,7 @@ const TimeInput: React.FC<{
   }, [value]);
 
   const formatTime = (input: string): string => {
-    // Remove all non-digit characters
     const digits = input.replace(/\D/g, "");
-
     if (digits.length === 0) return "";
     if (digits.length <= 2) return digits;
     if (digits.length <= 4) {
@@ -53,8 +51,6 @@ const TimeInput: React.FC<{
       const minutes = digits.slice(2);
       return `${hours}:${minutes}`;
     }
-
-    // Limit to 4 digits max
     const hours = digits.slice(0, 2);
     const minutes = digits.slice(2, 4);
     return `${hours}:${minutes}`;
@@ -77,7 +73,6 @@ const TimeInput: React.FC<{
       return;
     }
 
-    // Pad incomplete times
     if (inputValue.length === 1) {
       const padded = `0${inputValue}:00`;
       setInputValue(padded);
@@ -94,16 +89,13 @@ const TimeInput: React.FC<{
     } else if (validateTime(inputValue)) {
       onChange(inputValue);
     } else {
-      // Reset to previous valid value if invalid
       setInputValue(value);
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    // Allow: backspace, delete, tab, escape, enter, and arrow keys
     if (
       [8, 9, 27, 13, 37, 38, 39, 40, 46].includes(e.keyCode) ||
-      // Allow Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
       (e.keyCode === 65 && e.ctrlKey) ||
       (e.keyCode === 67 && e.ctrlKey) ||
       (e.keyCode === 86 && e.ctrlKey) ||
@@ -111,7 +103,6 @@ const TimeInput: React.FC<{
     ) {
       return;
     }
-    // Ensure that it's a number and stop the keypress
     if (
       (e.shiftKey || e.keyCode < 48 || e.keyCode > 57) &&
       (e.keyCode < 96 || e.keyCode > 105)
@@ -144,25 +135,15 @@ export const OperatingHoursModal: React.FC<OperatingHoursModalProps> = ({
   const [operatingHours, setOperatingHours] = useState<
     Record<string, DayHours[]>
   >({});
-  const [isInitialized, setIsInitialized] = useState(false);
-
+  const {fetchBusinessData} = useBusinessStore()
   const outletsData = usePureOutlets();
   const business = useBusiness();
   const businessId = business?.id;
-
-  // Use ref to track if we've already processed the data
   const processedOutletIds = useRef<Set<string>>(new Set());
 
-  console.log(outletsData, "The one we need");
-
-  // Initialize locations and operating hours - runs only when modal opens and data is available
   useEffect(() => {
-    // Only run if modal is open and we have data and haven't initialized yet
-    if (!isOpen || !outletsData || outletsData.length === 0 || isInitialized) {
-      return;
-    }
+    if (!isOpen || !outletsData || outletsData.length === 0) return;
 
-    // Check if we've already processed this exact set of outlets
     const currentOutletIds = outletsData
       .map((item) => String(item.id))
       .sort()
@@ -171,20 +152,15 @@ export const OperatingHoursModal: React.FC<OperatingHoursModalProps> = ({
       .sort()
       .join(",");
 
-    if (currentOutletIds === lastProcessedIds) {
-      return;
-    }
-
-    console.log("Initializing with outlets data:", outletsData);
+    if (currentOutletIds === lastProcessedIds) return;
 
     const newLocations = outletsData.map((item) => ({
       id: String(item.id),
       name: item.name || "Unnamed Outlet",
       address: item.address || "No address provided",
-      expanded: false, // Start with all collapsed
+      expanded: false,
     }));
 
-    console.log("New locations:", newLocations);
     setLocations(newLocations);
 
     const initialOperatingHours: Record<string, DayHours[]> = {};
@@ -214,43 +190,34 @@ export const OperatingHoursModal: React.FC<OperatingHoursModalProps> = ({
     });
 
     setOperatingHours(initialOperatingHours);
-
-    // Update the processed outlet IDs
     processedOutletIds.current = new Set(
       outletsData.map((item) => String(item.id))
     );
-    setIsInitialized(true);
-  }, [isOpen, outletsData, isInitialized]);
+  }, [isOpen, outletsData]);
 
-  // Reset initialization when modal closes
   useEffect(() => {
     if (!isOpen) {
-      setIsInitialized(false);
       setLocations([]);
       setOperatingHours({});
       setSelectAllMap({});
+      processedOutletIds.current = new Set();
     }
   }, [isOpen]);
 
   const toggleLocation = (locationId: string) => {
-    console.log("Toggle location clicked:", locationId);
-
-    setLocations((prev) => {
-      const updated = prev.map((loc) =>
+    setLocations((prev) =>
+      prev.map((loc) =>
         loc.id === locationId ? { ...loc, expanded: !loc.expanded } : loc
-      );
-      console.log("Updated locations:", updated);
-      return updated;
-    });
+      )
+    );
   };
 
   const handleDayToggle = (locationId: string, dayIndex: number) => {
     setOperatingHours((prev) => ({
       ...prev,
-      [locationId]:
-        prev[locationId]?.map((day, index) =>
-          index === dayIndex ? { ...day, enabled: !day.enabled } : day
-        ) || [],
+      [locationId]: prev[locationId]?.map((day, index) =>
+        index === dayIndex ? { ...day, enabled: !day.enabled } : day
+      ),
     }));
   };
 
@@ -262,23 +229,18 @@ export const OperatingHoursModal: React.FC<OperatingHoursModalProps> = ({
   ) => {
     setOperatingHours((prev) => ({
       ...prev,
-      [locationId]:
-        prev[locationId]?.map((day, index) =>
-          index === dayIndex ? { ...day, [field]: value } : day
-        ) || [],
+      [locationId]: prev[locationId]?.map((day, index) =>
+        index === dayIndex ? { ...day, [field]: value } : day
+      ),
     }));
   };
 
   const handleSubmit = async () => {
-    if (!businessId) {
-      console.error("Business ID is missing.");
-      return;
-    }
+    if (!businessId) return;
 
     const updatePromises = Object.entries(operatingHours).map(
       async ([outletId, dayHours]) => {
         const dto: Partial<OperatingHoursType> = {};
-
         dayHours.forEach(({ day, enabled, openTime, closeTime }) => {
           const key = day.toLowerCase() as keyof OperatingHoursType;
           dto[key] = {
@@ -295,12 +257,7 @@ export const OperatingHoursModal: React.FC<OperatingHoursModalProps> = ({
           );
 
         if (!isComplete) {
-          console.warn(`Skipping outlet ${outletId}: incomplete data.`);
-          return Promise.resolve({
-            outletId,
-            success: false,
-            error: "Incomplete data",
-          });
+          return { outletId, success: false, error: "Incomplete data" };
         }
 
         try {
@@ -308,21 +265,23 @@ export const OperatingHoursModal: React.FC<OperatingHoursModalProps> = ({
             outletId,
             dto as OperatingHoursType
           )) as ApiResponseType;
-          if (result.status) {
-            return { outletId, success: true };
-          } else {
-            throw new Error("API call failed");
-          }
+
+          return result.status
+            ? { outletId, success: true }
+            : { outletId, success: false, error: "API call failed" };
+
+
         } catch (error) {
-          console.error(`Failed to update outlet ${outletId}:`, error);
           return { outletId, success: false, error };
         }
       }
     );
 
     const results = await Promise.all(updatePromises);
-
     const successes = results.filter((r) => r.success).length;
+    if (successes > 0) {
+      await fetchBusinessData(); // Refresh global outlets data after success
+    }
 
     onClose();
     toast.success(`${successes} outlet(s) updated successfully`, {
@@ -330,7 +289,6 @@ export const OperatingHoursModal: React.FC<OperatingHoursModalProps> = ({
     });
   };
 
-  // Show loading state or empty state
   if (!outletsData || outletsData.length === 0) {
     return (
       <Modal
@@ -343,24 +301,6 @@ export const OperatingHoursModal: React.FC<OperatingHoursModalProps> = ({
       >
         <div className="p-4 text-center">
           <p className="text-gray-600">Loading outlets...</p>
-        </div>
-      </Modal>
-    );
-  }
-
-  // Show loading state while initializing
-  if (!isInitialized) {
-    return (
-      <Modal
-        size={"lg"}
-        image={SettingFiles.OperatingHours}
-        isOpen={isOpen}
-        onClose={onClose}
-        title="Operating Hours"
-        subtitle="Setup your Operating hours for all locations"
-      >
-        <div className="p-4 text-center">
-          <p className="text-gray-600">Initializing...</p>
         </div>
       </Modal>
     );
@@ -467,18 +407,26 @@ export const OperatingHoursModal: React.FC<OperatingHoursModalProps> = ({
                                   [location.id]: isChecked,
                                 }));
 
-                                setOperatingHours((prev) => ({
-                                  ...prev,
-                                  [location.id]: (prev[location.id] || []).map(
-                                    (day) => ({
-                                      ...day,
-                                      enabled: isChecked,
-                                    })
-                                  ),
-                                }));
+                                setOperatingHours((prev) => {
+                                  const current = prev[location.id] || [];
+                                  const sunday = current[0];
+
+                                  return {
+                                    ...prev,
+                                    [location.id]: current.map((day, index) =>
+                                      index === 0
+                                        ? { ...day, enabled: isChecked }
+                                        : {
+                                            ...day,
+                                            enabled: isChecked,
+                                            openTime: sunday.openTime,
+                                            closeTime: sunday.closeTime,
+                                          }
+                                    ),
+                                  };
+                                });
                               }}
                             />
-
                             <p className="text-[#1C1B20] text-sm">
                               Apply to all
                             </p>
@@ -494,7 +442,7 @@ export const OperatingHoursModal: React.FC<OperatingHoursModalProps> = ({
         })}
         <div className="flex justify-end">
           <button
-            onClick={() => handleSubmit()}
+            onClick={handleSubmit}
             className="flex items-center justify-center gap-2 bg-[#15BA5C] w-full text-[#ffffff] py-3 rounded-[10px] font-medium text-base mt-5"
             type="button"
           >

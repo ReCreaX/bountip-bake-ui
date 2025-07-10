@@ -67,11 +67,7 @@ const GoogleSignIn = ({ mode }: GoogleSignInProps) => {
   };
 
   return (
-    <GoogleOAuthProvider
-      clientId={
-        "1080949035782-0k8mn49hvuc9q9loc10er0idr08lm4cl.apps.googleusercontent.com"
-      }
-    >
+    <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!}>
       {/* Your custom button */}
       <button
         type="button"
